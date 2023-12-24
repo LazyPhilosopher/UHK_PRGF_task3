@@ -1,10 +1,10 @@
 package control;
 
-import model.Mesh;
-import model.Triangle2D;
-import model.Triangle3D;
+import model.*;
+import model.Point;
 import rasterize.LineRasterizer;
 import rasterize.LineRasterizerGraphics;
+import rasterize.PolygonRasterizer;
 import rasterize.Raster;
 import renderer.WiredRenderer;
 import solid.Cube;
@@ -23,9 +23,11 @@ import java.util.TimerTask;
 public class Controller3D implements Controller {
     private final Panel panel;
 
-    private LineRasterizer rasterizer;
+    private LineRasterizer line_rasterizer;
+    private PolygonRasterizer polygon_rasterizer;
     private WiredRenderer renderer;
     private float elapsed_time = 0;
+    private boolean in_progress = false;
 
     private Camera camera;
     private Mat4 proj;
@@ -40,8 +42,9 @@ public class Controller3D implements Controller {
     }
 
     public void initObjects(Raster raster) {
-        rasterizer = new LineRasterizerGraphics(raster);
-        renderer = new WiredRenderer(rasterizer);
+        line_rasterizer = new LineRasterizerGraphics(raster);
+        polygon_rasterizer = new PolygonRasterizer(raster);
+        renderer = new WiredRenderer(line_rasterizer, polygon_rasterizer);
 
         camera = new Camera(
           new Vec3D(0, -1, 0.3),
@@ -97,7 +100,7 @@ public class Controller3D implements Controller {
             public void mouseDragged(MouseEvent e) {
                 panel.clear();
 
-                rasterizer.rasterize(
+                line_rasterizer.rasterize(
                         panel.getRaster().getWidth() / 2,
                         panel.getRaster().getHeight() / 2,
                         e.getX(),
@@ -142,6 +145,7 @@ public class Controller3D implements Controller {
     }
 
     private void update() {
+        in_progress = true;
         panel.clear();
 
         renderer.setProj(proj);
@@ -150,9 +154,8 @@ public class Controller3D implements Controller {
         Solid cube = new Cube();
         cube.setModel(new Mat4Transl(1, 0, 0));
         Mat4Proj proj_matrix = new Mat4Proj();
-        double theta = elapsed_time;
-        Mat4RotX mat_rot_x = new Mat4RotX(theta*1);
-        Mat4RotZ mat_rot_z = new Mat4RotZ(theta*0.5);
+        Mat4RotX mat_rot_x = new Mat4RotX(elapsed_time*1);
+        Mat4RotZ mat_rot_z = new Mat4RotZ(elapsed_time*0.5);
 
 //        Triangle tri = new Triangle(new Vec3D(10,15,15), new Vec3D(10,15,15), new Color(0xFFFFFF));
 
@@ -178,47 +181,28 @@ public class Controller3D implements Controller {
 
         for (Triangle3D tri : mesh.polygons){
 
+            Triangle3D rot_X_triangle = mat_rot_x.Multiply3DTriangle(tri);
+            Triangle3D rot_XZ_triangle = mat_rot_z.Multiply3DTriangle(rot_X_triangle);
+            rot_XZ_triangle.shift_Z(3.0);
+            Triangle3D projected_triangle = proj_matrix.Multiply3DTriangle(rot_XZ_triangle);
 
-            Vec3D a = mat_rot_x.MultiplyVector(tri.a);
-            Vec3D b = mat_rot_x.MultiplyVector(tri.b);
-            Vec3D c = mat_rot_x.MultiplyVector(tri.c);
+            Triangle2D triangle_2D_projected = new Triangle2D(projected_triangle);
+            triangle_2D_projected.shift_XY(1.0, 1.0);
+            triangle_2D_projected.mul_XY(0.5 * panel.getHeight(), 0.5 * panel.getWidth());
 
-            a = mat_rot_z.MultiplyVector(a);
-            b = mat_rot_z.MultiplyVector(b);
-            c = mat_rot_z.MultiplyVector(c);
+            renderer.lineRasterizer.rasterize((int)triangle_2D_projected.a_x, (int)triangle_2D_projected.a_y, (int)triangle_2D_projected.b_x, (int)triangle_2D_projected.b_y, new Color(0xFFFFFF));
+            renderer.lineRasterizer.rasterize((int)triangle_2D_projected.b_x, (int)triangle_2D_projected.b_y, (int)triangle_2D_projected.c_x, (int)triangle_2D_projected.c_y, new Color(0xFFFFFF));
+            renderer.lineRasterizer.rasterize((int)triangle_2D_projected.c_x, (int)triangle_2D_projected.c_y, (int)triangle_2D_projected.a_x, (int)triangle_2D_projected.a_y, new Color(0xFFFFFF));
 
-            a.setZ(a.getZ()+3.0);
-            b.setZ(b.getZ()+3.0);
-            c.setZ(c.getZ()+3.0);
-
-            a = proj_matrix.MultiplyVector(a);
-            b = proj_matrix.MultiplyVector(b);
-            c = proj_matrix.MultiplyVector(c);
-
-            Triangle2D tri_projected = new Triangle2D(a.getX(), a.getY(),
-                    b.getX(), b.getY(),
-                    c.getX(), c.getY());
-
-
-            tri_projected.a_x += 1.0; tri_projected.a_y += 1.0;
-            tri_projected.b_x += 1.0; tri_projected.b_y += 1.0;
-            tri_projected.c_x += 1.0; tri_projected.c_y += 1.0;
-
-            tri_projected.a_x *= 0.5 * panel.getHeight(); tri_projected.a_y *= 0.5 * panel.getWidth();
-            tri_projected.b_x *= 0.5 * panel.getHeight(); tri_projected.b_y *= 0.5 * panel.getWidth();
-            tri_projected.c_x *= 0.5 * panel.getHeight(); tri_projected.c_y *= 0.5 * panel.getWidth();
-
-            renderer.lineRasterizer.rasterize((int)tri_projected.a_x, (int)tri_projected.a_y, (int)tri_projected.b_x, (int)tri_projected.b_y, new Color(0xFFFFFF));
-            renderer.lineRasterizer.rasterize((int)tri_projected.b_x, (int)tri_projected.b_y, (int)tri_projected.c_x, (int)tri_projected.c_y, new Color(0xFFFFFF));
-            renderer.lineRasterizer.rasterize((int)tri_projected.c_x, (int)tri_projected.c_y, (int)tri_projected.a_x, (int)tri_projected.a_y, new Color(0xFFFFFF));
+            Polygon2D polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
+                    new Point((int)triangle_2D_projected.a_x, (int)triangle_2D_projected.a_y),
+                    new Point((int)triangle_2D_projected.b_x, (int)triangle_2D_projected.b_y),
+                    new Point((int)triangle_2D_projected.c_x, (int)triangle_2D_projected.c_y)
+                    )));
+            renderer.polygonRasterizer.drawFilledTriangle(polygon, 0xAAAAAA);
         }
-
-//        renderer.render(cube);
-//        renderer.lineRasterizer.rasterize(25+(int)elapsed_time,25+(int)elapsed_time,-25+(int)elapsed_time,-25+(int)elapsed_time, new Color(0xFFFFFF));
-
-
-
         panel.repaint();
+        in_progress = false;
     }
 
     private void hardClear() {
@@ -232,8 +216,9 @@ public class Controller3D implements Controller {
             public void run() {
                 elapsed_time += 0.01;
                 update();
+
 //                panel.repaint();
             }
-        }, 0, 10);
+        }, 0, 30);
     }
 }

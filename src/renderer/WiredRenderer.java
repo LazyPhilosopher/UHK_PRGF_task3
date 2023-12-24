@@ -1,6 +1,7 @@
 package renderer;
 
 import rasterize.LineRasterizer;
+import rasterize.PolygonRasterizer;
 import solid.Solid;
 import transforms.Mat4;
 import transforms.Point3D;
@@ -9,11 +10,13 @@ import java.awt.*;
 
 public class WiredRenderer {
     public LineRasterizer lineRasterizer;
+    public PolygonRasterizer polygonRasterizer;
 
     private Mat4 view, proj;
 
-    public WiredRenderer(LineRasterizer lineRasterizer) {
+    public WiredRenderer(LineRasterizer lineRasterizer, PolygonRasterizer polygonRasterizer) {
         this.lineRasterizer = lineRasterizer;
+        this.polygonRasterizer = polygonRasterizer;
     }
 
     public void render(Solid solid) {

@@ -1,5 +1,7 @@
 package transforms;
 
+import model.Triangle3D;
+
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
@@ -464,5 +466,30 @@ public class Mat4 {
 				mat[2][0], mat[2][1], mat[2][2], mat[2][3],
 				mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
 	}
-	
+
+	// TODO.
+	public Vec3D Multiply3DVector(Vec3D i){
+		Vec3D o = new Vec3D();
+		o.setX(i.getX() * mat[0][0] + i.getY() * mat[1][0] + i.getZ() * mat[2][0] + mat[3][0]);
+		o.setY(i.getX() * mat[0][1] + i.getY() * mat[1][1] + i.getZ() * mat[2][1] + mat[3][1]);
+		o.setZ(i.getX() * mat[0][2] + i.getY() * mat[1][2] + i.getZ() * mat[2][2] + mat[3][2]);
+		double w = i.getX() * mat[0][3] + i.getY() * mat[1][3] + i.getZ() * mat[2][3] + mat[3][3];
+
+		if (w != 0.0){
+			o.setX(o.getX()/w);
+			o.setY(o.getY()/w);
+			o.setZ(o.getZ()/w);
+		}
+		return o;
+	}
+
+	// TODO.
+	public Triangle3D Multiply3DTriangle(Triangle3D triangle){
+		Triangle3D out = new Triangle3D();
+		out.a = Multiply3DVector(triangle.a);
+		out.b = Multiply3DVector(triangle.b);
+		out.c = Multiply3DVector(triangle.c);
+		return out;
+	}
+
 }

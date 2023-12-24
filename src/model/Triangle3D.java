@@ -21,4 +21,29 @@ public class Triangle3D {
         this.c = _c;
         this.color = _color;
     }
+
+    public void shift_X(double shift){
+        this.a.setX(this.a.getX() + shift);
+        this.b.setX(this.b.getX() + shift);
+        this.c.setX(this.c.getX() + shift);
+    }
+
+    public void shift_Y(double shift){
+        this.a.setY(this.a.getY() + shift);
+        this.b.setY(this.b.getY() + shift);
+        this.c.setY(this.c.getY() + shift);
+    }
+
+    public void shift_Z(double shift){
+        this.a.setZ(this.a.getZ() + shift);
+        this.b.setZ(this.b.getZ() + shift);
+        this.c.setZ(this.c.getZ() + shift);
+    }
+
+    public void shift_XYZ(double scaleX, double scaleY, double scaleZ){
+        shift_X(scaleX);
+        shift_Y(scaleY);
+        shift_Z(scaleZ);
+    }
+
 }
