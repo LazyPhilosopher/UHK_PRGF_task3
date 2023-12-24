@@ -105,7 +105,7 @@ public class PolygonRasterizer extends LineRasterizer {
         drawShallowPolygon(polygon, 0xFFFFFF);
     }
 
-    public void drawFilledTriangle(Polygon2D polygon, int int_color){
+    public void drawFilledTriangle(Polygon2D polygon, Color color){
         List<Point> polygon_vertices = new ArrayList<>(polygon.getVertices());
         polygon_vertices.add(polygon_vertices.get(0));
 
@@ -135,11 +135,11 @@ public class PolygonRasterizer extends LineRasterizer {
                 for (int idx = 1; idx < pixels_on_y_axis.get(y_axis).size(); idx += 1){
                     int x1 = pixels_on_y_axis.get(y_axis).get(idx-1);
                     int x2 = pixels_on_y_axis.get(y_axis).get(idx);
-                    line_rasterizer.drawLine(x1, y_axis, x2, y_axis, new Color(int_color));
+                    line_rasterizer.drawLine(x1, y_axis, x2, y_axis, color);
                 }
             }
         }
-        drawShallowPolygon(polygon, 0x0000FF);
+//        drawShallowPolygon(polygon, 0x0000FF);
     }
 
     public void drawShallowPolygon(Polygon2D polygon, int int_color){

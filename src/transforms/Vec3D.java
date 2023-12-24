@@ -387,4 +387,11 @@ public class Vec3D {
 		return String.format(Locale.US, "(" + format + "," + format + "," + format + ")",
 				x, y, z);
 	}
+
+
+
+	public void normSelf(){
+		double l = Math.sqrt(this.getX()*this.getX() + this.getY()+ this.getY() + this.getZ()* this.getZ());
+		this.mul(1/l);
+	}
 }
