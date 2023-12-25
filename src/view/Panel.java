@@ -16,7 +16,7 @@ public class Panel extends JPanel {
         return raster;
     }
 
-    private static final int FPS = 1000 / 20;
+    private static final int FPS = 1000 / 10;
     public static final int WIDTH = 800, HEIGHT = 600;
 
     Panel() {

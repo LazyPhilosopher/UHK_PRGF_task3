@@ -5,7 +5,7 @@ import transforms.Vec3D;
 import java.awt.Color;
 
 public class Triangle3D {
-    public Vec3D a, b, c;
+    public Vec3D a, b, c, norm;
     public  Color color;
 
     public Triangle3D(){
@@ -46,4 +46,7 @@ public class Triangle3D {
         shift_Z(scaleZ);
     }
 
+    public void setNorm(Vec3D norm){
+        this.norm = norm;
+    }
 }

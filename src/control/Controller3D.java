@@ -15,10 +15,8 @@ import view.Panel;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.Timer;
-import java.util.TimerTask;
 
 public class Controller3D implements Controller {
     private final Panel panel;
@@ -53,6 +51,8 @@ public class Controller3D implements Controller {
             new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 0, 0), new Vec3D(1, 0, 0), new Color(0x0000FF))
     )));
 
+//    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\VideoShip.obj");
+    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\teapot.obj");
     public Controller3D(Panel panel) {
         this.panel = panel;
         initObjects(panel.getRaster());
@@ -176,19 +176,18 @@ public class Controller3D implements Controller {
         cube.setModel(new Mat4Transl(1, 0, 0));
         Mat4Proj proj_matrix = new Mat4Proj();
         Mat4RotX mat_rot_x = new Mat4RotX(elapsed_time);
-        Mat4RotY mat_rot_y = new Mat4RotY(elapsed_time);
-        Mat4RotZ mat_rot_z = new Mat4RotZ(elapsed_time);
+        Mat4RotY mat_rot_y = new Mat4RotY(-elapsed_time);
+        Mat4RotZ mat_rot_z = new Mat4RotZ(-elapsed_time);
 
 //        Triangle tri = new Triangle(new Vec3D(10,15,15), new Vec3D(10,15,15), new Color(0xFFFFFF));
 
-
-
-        for (Triangle3D tri : mesh.polygons){
+        ArrayList<Triangle3D> polygons = new ArrayList<>();
+        for (Triangle3D tri : tie.polygons){
 
             Triangle3D rot_X_triangle = mat_rot_x.Multiply3DTriangle(tri);
             Triangle3D rot_XY_triangle = mat_rot_y.Multiply3DTriangle(rot_X_triangle);
             Triangle3D rot_XYZ_triangle = mat_rot_z.Multiply3DTriangle(rot_XY_triangle);
-            rot_XYZ_triangle.shift_Z(3.0);
+            rot_XYZ_triangle.shift_Z(10.0);
             Triangle3D projected_triangle = proj_matrix.Multiply3DTriangle(rot_XYZ_triangle);
 
             Vec3D line1 = new Vec3D();
@@ -203,40 +202,54 @@ public class Controller3D implements Controller {
             line2.setY(projected_triangle.c.getY() -  projected_triangle.a.getY());
             line2.setZ(projected_triangle.c.getZ() -  projected_triangle.a.getZ());
 
-            norm = crossProduct(line1, line2);
-            norm.normSelf();
 
             Vec3D sight = new Vec3D();
             sight.setX(projected_triangle.a.getX() - camera.getX());
             sight.setY(projected_triangle.a.getY() - camera.getY());
             sight.setZ(projected_triangle.a.getZ() - camera.getZ());
 
+            norm = crossProduct(line1, line2);
+            norm.normSelf();
+            projected_triangle.setNorm(norm);
 
-            if(dotProduct(norm, sight) > 0){
+
+
+
+            if(dotProduct(projected_triangle.norm, sight) > 0){
                 continue;
             }
+            else {
+                polygons.add(projected_triangle);
+            }
+
+
+
+        }
+        // Sort the list based on the Z attribute
+        polygons.sort((tri1, tri2) -> Double.compare(tri2.a.getZ() + tri2.b.getZ() + tri2.c.getZ(), tri1.a.getZ() + tri1.b.getZ() + tri1.c.getZ()));
+
+        for(Triangle3D projected_triangle : polygons){
 
             Triangle2D triangle_2D_projected = new Triangle2D(projected_triangle);
             triangle_2D_projected.shift_XY(1.0, 1.0);
             triangle_2D_projected.mul_XY(0.5 * panel.getHeight(), 0.5 * panel.getWidth());
 
-//            renderer.lineRasterizer.rasterize((int)triangle_2D_projected.a_x, (int)triangle_2D_projected.a_y, (int)triangle_2D_projected.b_x, (int)triangle_2D_projected.b_y, new Color(0xFFFFFF));
-//            renderer.lineRasterizer.rasterize((int)triangle_2D_projected.b_x, (int)triangle_2D_projected.b_y, (int)triangle_2D_projected.c_x, (int)triangle_2D_projected.c_y, new Color(0xFFFFFF));
-//            renderer.lineRasterizer.rasterize((int)triangle_2D_projected.c_x, (int)triangle_2D_projected.c_y, (int)triangle_2D_projected.a_x, (int)triangle_2D_projected.a_y, new Color(0xFFFFFF));
 
-
+            double light_amount = (dotProduct(light_direction, projected_triangle.norm)/2 + 0.5);
+            Color color = new Color((int)(projected_triangle.color.getRed()*light_amount),
+                    (int)(projected_triangle.color.getGreen()*light_amount),
+                    (int)(projected_triangle.color.getBlue()*light_amount));
 
             Polygon2D polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
                     new Point((int)triangle_2D_projected.a_x, (int)triangle_2D_projected.a_y),
                     new Point((int)triangle_2D_projected.b_x, (int)triangle_2D_projected.b_y),
                     new Point((int)triangle_2D_projected.c_x, (int)triangle_2D_projected.c_y)
-                    )));
-            double light_amount = (dotProduct(light_direction, norm)/2 + 0.5);
-            Color color = new Color((int)(tri.color.getRed()*light_amount),
-                    (int)(tri.color.getGreen()*light_amount),
-                    (int)(tri.color.getBlue()*light_amount));
+            )),
+                    color);
+
             renderer.polygonRasterizer.drawFilledTriangle(polygon, color);
         }
+
         panel.repaint();
         in_progress = false;
     }
@@ -250,12 +263,12 @@ public class Controller3D implements Controller {
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-                elapsed_time += 0.005;
+                elapsed_time += 0.03;
                 update();
 
 //                panel.repaint();
             }
-        }, 0, 7);
+        }, 0, 60);
     }
 
     public Vec3D crossProduct(Vec3D a, Vec3D b){
