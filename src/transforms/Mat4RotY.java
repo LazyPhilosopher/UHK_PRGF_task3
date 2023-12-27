@@ -18,7 +18,7 @@ public class Mat4RotY extends Mat4Identity {
 	public Mat4RotY(final double alpha) {
 		mat[0][0] = Math.cos(alpha);
 		mat[2][2] = Math.cos(alpha);
-		mat[2][0] = Math.sin(alpha);
-		mat[0][2] = -Math.sin(alpha);
+		mat[0][2] = Math.sin(alpha);
+		mat[2][0] = -Math.sin(alpha);
 	}
 }

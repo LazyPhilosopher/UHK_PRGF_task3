@@ -492,4 +492,17 @@ public class Mat4 {
 		return out;
 	}
 
+	// Only for rotation/translation matrices.
+	public Mat4 Mat4QuickInverse(){
+		Mat4 out = new Mat4();
+		out.mat[0][0] = this.mat[0][0];	out.mat[0][1] = this.mat[1][0];	out.mat[0][2] = this.mat[2][0];
+		out.mat[1][0] = this.mat[0][1];	out.mat[1][1] = this.mat[1][1];	out.mat[1][2] = this.mat[2][1];
+		out.mat[2][0] = this.mat[0][2];	out.mat[2][1] = this.mat[1][2];	out.mat[2][2] = this.mat[2][2];
+		out.mat[3][0] = -(this.mat[3][0] * out.mat[0][0] + this.mat[3][1] * out.mat[1][0] + this.mat[3][2] * out.mat[2][0]);
+		out.mat[3][1] = -(this.mat[3][0] * out.mat[0][1] + this.mat[3][1] * out.mat[1][1] + this.mat[3][2] * out.mat[2][1]);
+		out.mat[3][2] = -(this.mat[3][0] * out.mat[0][2] + this.mat[3][1] * out.mat[1][2] + this.mat[3][2] * out.mat[2][2]);
+		out.mat[3][3] = 1;
+		return out;
+	}
+
 }
