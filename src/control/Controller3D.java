@@ -27,25 +27,25 @@ public class Controller3D implements Controller {
     private float elapsed_time = 0;
     private boolean in_progress = false;
 
-    private Vec3D camera = new Vec3D();
-    private Vec3D light_direction = new Vec3D(0,0,-1);
+    private Vec3D camera = new Vec3D(0,0,0);
+    private Vec3D light_direction = new Vec3D(0,1,0);
     private Mat4 proj;
 
-    Mesh mesh = new Mesh(new ArrayList<>(Arrays.asList(
+    Mesh cube = new Mesh(new ArrayList<>(Arrays.asList(
             new Triangle3D(new Vec3D(0, 0, 0), new Vec3D(0, 1, 0), new Vec3D(1, 1, 0), new Color(0xFF0000)),
             new Triangle3D(new Vec3D(0, 0, 0), new Vec3D(1, 1, 0), new Vec3D(1, 0, 0), new Color(0xFF0000)),
 
-            new Triangle3D(new Vec3D(1, 0, 0), new Vec3D(1, 1, 0), new Vec3D(1, 1, 1), new Color(0x00FF00)),
-            new Triangle3D(new Vec3D(1, 0, 0), new Vec3D(1, 1, 1), new Vec3D(1, 0, 1), new Color(0x00FF00)),
+            new Triangle3D(new Vec3D(1, 0, 0), new Vec3D(1, 1, 0), new Vec3D(1, 1, 1), new Color(0xFF0000)),
+            new Triangle3D(new Vec3D(1, 0, 0), new Vec3D(1, 1, 1), new Vec3D(1, 0, 1), new Color(0xFF0000)),
 
-            new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(1, 1, 1), new Vec3D(0, 1, 1), new Color(0x0000FF)),
-            new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 1, 1), new Vec3D(0, 0, 1), new Color(0x0000FF)),
+            new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(1, 1, 1), new Vec3D(0, 1, 1), new Color(0x00FF00)),
+            new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 1, 1), new Vec3D(0, 0, 1), new Color(0x00FF00)),
 
-            new Triangle3D(new Vec3D(0, 0, 1), new Vec3D(0, 1, 1), new Vec3D(0, 1, 0), new Color(0xFF0000)),
-            new Triangle3D(new Vec3D(0, 0, 1), new Vec3D(0, 1, 0), new Vec3D(0, 0, 0), new Color(0xFF0000)),
+            new Triangle3D(new Vec3D(0, 0, 1), new Vec3D(0, 1, 1), new Vec3D(0, 1, 0), new Color(0x00FF00)),
+            new Triangle3D(new Vec3D(0, 0, 1), new Vec3D(0, 1, 0), new Vec3D(0, 0, 0), new Color(0x00FF00)),
 
-            new Triangle3D(new Vec3D(0, 1, 0), new Vec3D(0, 1, 1), new Vec3D(1, 1, 1), new Color(0x00FF00)),
-            new Triangle3D(new Vec3D(0, 1, 0), new Vec3D(1, 1, 1), new Vec3D(1, 1, 0), new Color(0x00FF00)),
+            new Triangle3D(new Vec3D(0, 1, 0), new Vec3D(0, 1, 1), new Vec3D(1, 1, 1), new Color(0x0000FF)),
+            new Triangle3D(new Vec3D(0, 1, 0), new Vec3D(1, 1, 1), new Vec3D(1, 1, 0), new Color(0x0000FF)),
 
             new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 0, 1), new Vec3D(0, 0, 0), new Color(0x0000FF)),
             new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 0, 0), new Vec3D(1, 0, 0), new Color(0x0000FF))
@@ -53,6 +53,7 @@ public class Controller3D implements Controller {
 
 //    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\VideoShip.obj");
     Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\teapot.obj");
+//    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\tie_fighter.obj");
     public Controller3D(Panel panel) {
         this.panel = panel;
         initObjects(panel.getRaster());
@@ -175,11 +176,18 @@ public class Controller3D implements Controller {
         Solid cube = new Cube();
         cube.setModel(new Mat4Transl(1, 0, 0));
         Mat4Proj proj_matrix = new Mat4Proj();
-        Mat4RotX mat_rot_x = new Mat4RotX(elapsed_time);
-        Mat4RotY mat_rot_y = new Mat4RotY(-elapsed_time);
-        Mat4RotZ mat_rot_z = new Mat4RotZ(-elapsed_time);
+        Mat4RotX mat_rot_x = new Mat4RotX(Math.PI);
+        Mat4RotY mat_rot_y = new Mat4RotY(Math.PI-elapsed_time);
+        Mat4RotZ mat_rot_z = new Mat4RotZ(elapsed_time);
 
 //        Triangle tri = new Triangle(new Vec3D(10,15,15), new Vec3D(10,15,15), new Color(0xFFFFFF));
+
+        Vec3D x_axis = proj_matrix.MultiplyVector(new Vec3D(100,0,0));
+        Vec3D y_axis = proj_matrix.MultiplyVector(new Vec3D(0,100,0));
+        Vec3D z_axis = proj_matrix.MultiplyVector(new Vec3D(0,0,100));
+        line_rasterizer.drawLine(0, 0, (int)x_axis.getX(), (int)x_axis.getY(), new Color(0x00FF00));
+        line_rasterizer.drawLine(0, 0, (int)y_axis.getX(), (int)y_axis.getY(), new Color(0xFF0000));
+        line_rasterizer.drawLine(0, 0, (int)z_axis.getX(), (int)z_axis.getY(), new Color(0xFFFFFF));
 
         ArrayList<Triangle3D> polygons = new ArrayList<>();
         for (Triangle3D tri : tie.polygons){
@@ -187,35 +195,37 @@ public class Controller3D implements Controller {
             Triangle3D rot_X_triangle = mat_rot_x.Multiply3DTriangle(tri);
             Triangle3D rot_XY_triangle = mat_rot_y.Multiply3DTriangle(rot_X_triangle);
             Triangle3D rot_XYZ_triangle = mat_rot_z.Multiply3DTriangle(rot_XY_triangle);
-            rot_XYZ_triangle.shift_Z(10.0);
+            rot_XYZ_triangle.shift_Z(8.0);
             Triangle3D projected_triangle = proj_matrix.Multiply3DTriangle(rot_XYZ_triangle);
 
             Vec3D line1 = new Vec3D();
             Vec3D line2 = new Vec3D();
             Vec3D norm = new Vec3D();
 
-            line1.setX(projected_triangle.b.getX() -  projected_triangle.a.getX());
-            line1.setY(projected_triangle.b.getY() -  projected_triangle.a.getY());
-            line1.setZ(projected_triangle.b.getZ() -  projected_triangle.a.getZ());
+            line1.setX(rot_XYZ_triangle.b.getX() -  rot_XYZ_triangle.a.getX());
+            line1.setY(rot_XYZ_triangle.b.getY() -  rot_XYZ_triangle.a.getY());
+            line1.setZ(rot_XYZ_triangle.b.getZ() -  rot_XYZ_triangle.a.getZ());
 
-            line2.setX(projected_triangle.c.getX() -  projected_triangle.a.getX());
-            line2.setY(projected_triangle.c.getY() -  projected_triangle.a.getY());
-            line2.setZ(projected_triangle.c.getZ() -  projected_triangle.a.getZ());
+            line2.setX(rot_XYZ_triangle.c.getX() -  rot_XYZ_triangle.a.getX());
+            line2.setY(rot_XYZ_triangle.c.getY() -  rot_XYZ_triangle.a.getY());
+            line2.setZ(rot_XYZ_triangle.c.getZ() -  rot_XYZ_triangle.a.getZ());
 
 
             Vec3D sight = new Vec3D();
-            sight.setX(projected_triangle.a.getX() - camera.getX());
-            sight.setY(projected_triangle.a.getY() - camera.getY());
-            sight.setZ(projected_triangle.a.getZ() - camera.getZ());
+            sight.setX(rot_XYZ_triangle.a.getX() - camera.getX());
+            sight.setY(rot_XYZ_triangle.a.getY() - camera.getY());
+            sight.setZ(rot_XYZ_triangle.a.getZ() - camera.getZ());
 
-            norm = crossProduct(line1, line2);
+            line1.normSelf();
+            line2.normSelf();
+            norm = line1.crossProduct(line2);
             norm.normSelf();
             projected_triangle.setNorm(norm);
 
 
 
 
-            if(dotProduct(projected_triangle.norm, sight) > 0){
+            if(projected_triangle.norm.dotProduct(sight) < 0){
                 continue;
             }
             else {
@@ -235,7 +245,12 @@ public class Controller3D implements Controller {
             triangle_2D_projected.mul_XY(0.5 * panel.getHeight(), 0.5 * panel.getWidth());
 
 
-            double light_amount = (dotProduct(light_direction, projected_triangle.norm)/2 + 0.5);
+
+            light_direction.normSelf();
+//            projected_triangle.norm = projected_triangle.
+//            projected_triangle.norm.normSelf();
+//            System.out.println(light_direction.dotProduct(projected_triangle.norm)/2.001+0.5);
+            double light_amount = (light_direction.dotProduct(projected_triangle.norm)/2.001+0.5);
             Color color = new Color((int)(projected_triangle.color.getRed()*light_amount),
                     (int)(projected_triangle.color.getGreen()*light_amount),
                     (int)(projected_triangle.color.getBlue()*light_amount));
@@ -271,18 +286,18 @@ public class Controller3D implements Controller {
         }, 0, 60);
     }
 
-    public Vec3D crossProduct(Vec3D a, Vec3D b){
-        Vec3D out = new Vec3D();
-        out.setX(a.getY() * b.getZ() - a.getZ() * b.getY());
-        out.setY(a.getZ() * b.getX() - a.getX() * b.getZ());
-        out.setZ(a.getX() * b.getY() - a.getY() * b.getX());
-        return out;
-    }
-
-    public double dotProduct(Vec3D a, Vec3D b){
-        return  a.getX() * b.getX() +
-                a.getY() * b.getY() +
-                a.getZ() * b.getZ();
-    }
+//    public Vec3D crossProduct(Vec3D a, Vec3D b){
+//        Vec3D out = new Vec3D();
+//        out.setX(a.getY() * b.getZ() - a.getZ() * b.getY());
+//        out.setY(a.getZ() * b.getX() - a.getX() * b.getZ());
+//        out.setZ(a.getX() * b.getY() - a.getY() * b.getX());
+//        return out;
+//    }
+//
+//    public double dotProduct(Vec3D a, Vec3D b){
+//        return  a.getX() * b.getX() +
+//                a.getY() * b.getY() +
+//                a.getZ() * b.getZ();
+//    }
 
 }

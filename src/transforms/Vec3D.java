@@ -26,7 +26,7 @@ public class Vec3D {
 
 	/**
 	 * Creates a vector with the given coordinates
-	 * 
+	 *
 	 * @param x
 	 *            x coordinate
 	 * @param y
@@ -42,7 +42,7 @@ public class Vec3D {
 
 	/**
 	 * Creates a vector with all coordinates set to the given value
-	 * 
+	 *
 	 * @param value
 	 *            coordinate
 	 */
@@ -54,7 +54,7 @@ public class Vec3D {
 
 	/**
 	 * Creates a vector by cloning the given one
-	 * 
+	 *
 	 * @param v
 	 *            vector to be cloned
 	 */
@@ -67,7 +67,7 @@ public class Vec3D {
 	/**
 	 * Creates a vector by ignoring the fourth homogeneous coordinate w of the
 	 * given homogeneous 3D point
-	 * 
+	 *
 	 * @param point
 	 *            homogeneous 3D point whose x,y,z will be cloned
 	 */
@@ -76,11 +76,11 @@ public class Vec3D {
 		y = point.getY();
 		z = point.getZ();
 	}
-	
+
 	/**
 	 * Creates a vector by extracting coordinates from the given array of
 	 * doubles
-	 * 
+	 *
 	 * @param array
 	 *            double array of size 3 (asserted)
 	 */
@@ -93,7 +93,7 @@ public class Vec3D {
 
 	/**
 	 * Returns the x coordinate
-	 * 
+	 *
 	 * @return the x
 	 */
 	public double getX() {
@@ -102,7 +102,7 @@ public class Vec3D {
 
 	/**
 	 * Returns the y coordinate
-	 * 
+	 *
 	 * @return the y
 	 */
 	public double getY() {
@@ -111,7 +111,7 @@ public class Vec3D {
 
 	/**
 	 * Returns the z coordinate
-	 * 
+	 *
 	 * @return the z
 	 */
 	public double getZ() {
@@ -136,7 +136,7 @@ public class Vec3D {
 	/**
 	 * Returns a clone of this vector with the x coordinate replaced by the
 	 * given value
-	 * 
+	 *
 	 * @param x
 	 *            x coordinate
 	 * @return new Vec3D instance
@@ -144,11 +144,11 @@ public class Vec3D {
 	public Vec3D withX(double x) {
 		return new Vec3D(x, this.getY(), this.getZ());
 	}
-	
+
 	/**
 	 * Returns a clone of this vector with the y coordinate replaced by the
 	 * given value
-	 * 
+	 *
 	 * @param y
 	 *            y coordinate
 	 * @return new Vec3D instance
@@ -160,7 +160,7 @@ public class Vec3D {
 	/**
 	 * Returns a clone of this vector with the z coordinate replaced by the
 	 * given value
-	 * 
+	 *
 	 * @param z
 	 *            z coordinate
 	 * @return new Vec3D instance
@@ -168,11 +168,11 @@ public class Vec3D {
 	public Vec3D withZ(double z) {
 		return new Vec3D(this.getX(), this.getY(), z);
 	}
-	
+
 	/**
 	 * Returns 2D vector with this x and y coordinates, i.e. an orthogonal
 	 * projection of this as an affine point into the xy plane
-	 * 
+	 *
 	 * @return new Vec2D instance
 	 */
 	public Vec2D ignoreZ() {
@@ -181,7 +181,7 @@ public class Vec3D {
 
 	/**
 	 * Returns the result of vector addition of the given vector
-	 * 
+	 *
 	 * @param v
 	 *            vector to add
 	 * @return new Vec3D instance
@@ -192,7 +192,7 @@ public class Vec3D {
 
 	/**
 	 * Returns the result of vector subtraction of the given vector
-	 * 
+	 *
 	 * @param v
 	 *            vector to subtract
 	 * @return new Vec3D instance
@@ -200,10 +200,10 @@ public class Vec3D {
 	public Vec3D sub(final Vec3D v) {
 		return new Vec3D(x - v.x, y - v.y, z - v.z);
 	}
-	
+
 	/**
 	 * Returns the result of scalar multiplication
-	 * 
+	 *
 	 * @param d
 	 *            scalar value of type double
 	 * @return new Vec3D instance
@@ -215,21 +215,21 @@ public class Vec3D {
 	/**
 	 * Returns the result of multiplication by the given 3x3 matrix thus
 	 * applying the transformation contained within
-	 * 
+	 *
 	 * @param m
 	 *            3x3 matrix
 	 * @return new Vec3D instance
 	 */
 	public Vec3D mul(final Mat3 m) {
 		return new Vec3D(
-			m.mat[0][0] * x + m.mat[1][0] * y + m.mat[2][0] * z,
-			m.mat[0][1] * x + m.mat[1][1] * y + m.mat[2][1] * z,
-			m.mat[0][2] * x + m.mat[1][2] * y + m.mat[2][2] * z);
+				m.mat[0][0] * x + m.mat[1][0] * y + m.mat[2][0] * z,
+				m.mat[0][1] * x + m.mat[1][1] * y + m.mat[2][1] * z,
+				m.mat[0][2] * x + m.mat[1][2] * y + m.mat[2][2] * z);
 	}
 
 	/**
 	 * Returns the result of applying the given quaternion to this vector
-	 * 
+	 *
 	 * @param q
 	 *            quaternion
 	 * @return new Vec3D instance
@@ -243,9 +243,9 @@ public class Vec3D {
 
 	/**
 	 * Returns the result of element-wise multiplication with the given vector
-	 * 
+	 *
 	 * @param v
-	 *            3D vector 
+	 *            3D vector
 	 * @return new Vec3D instance
 	 */
 	public Vec3D mul(final Vec3D v) {
@@ -254,9 +254,9 @@ public class Vec3D {
 
 	/**
 	 * Returns the result of dot-product with the given vector
-	 * 
+	 *
 	 * @param v
-	 *            3D vector 
+	 *            3D vector
 	 * @return double-precision floating point value
 	 */
 	public double dot(final Vec3D v) {
@@ -267,7 +267,7 @@ public class Vec3D {
 	 * Returns the result of cross-product with the given vector, i.e. a vector
 	 * perpendicular to both this and the given vector, the direction is
 	 * right-handed
-	 * 
+	 *
 	 * @param v
 	 *            3D vector
 	 * @return new Vec3D instance
@@ -280,7 +280,7 @@ public class Vec3D {
 	/**
 	 * Returns a collinear unit vector (by dividing all vector components by
 	 * vector length) if possible (nonzero length), empty Optional otherwise
-	 * 
+	 *
 	 * @return new Optional<Vec3D> instance
 	 */
 	public Optional<Vec3D> normalized() {
@@ -292,7 +292,7 @@ public class Vec3D {
 
 	/**
 	 * Returns the vector opposite to this vector
-	 * 
+	 *
 	 * @return new Vec2D instance
 	 */
 	public Vec3D opposite() {
@@ -301,7 +301,7 @@ public class Vec3D {
 
 	/**
 	 * Returns the length of this vector
-	 * 
+	 *
 	 * @return double-precision floating point value
 	 */
 	public double length() {
@@ -310,7 +310,7 @@ public class Vec3D {
 
 	/**
 	 * Compares this object against the specified object.
-	 * 
+	 *
 	 * @param obj
 	 *            the object to compare with.
 	 * @return {@code true} if the objects are the same; {@code false}
@@ -318,7 +318,7 @@ public class Vec3D {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		return (this == obj) || (obj != null) && (obj instanceof Vec3D) 
+		return (this == obj) || (obj != null) && (obj instanceof Vec3D)
 				&& (new Double(((Vec3D) obj).getX()).equals(getX()))
 				&& (new Double(((Vec3D) obj).getY()).equals(getY()))
 				&& (new Double(((Vec3D) obj).getZ()).equals(getZ()));
@@ -333,10 +333,10 @@ public class Vec3D {
 	public int hashCode(){
 		return Objects.hash(this.getX(), this.getY(), this.getZ());
 	}
-    
+
 	/**
 	 * Compares this Vec3D against the specified Vec3D with epsilon.
-	 * 
+	 *
 	 * @param vec
 	 *            the vector to compare with.
 	 * @param epsilon
@@ -346,15 +346,15 @@ public class Vec3D {
 	 *         otherwise.
 	 */
 	public boolean eEquals(Vec3D vec, double epsilon) {
-		return (this == vec) || (vec != null) 
+		return (this == vec) || (vec != null)
 				&& Compare.eEquals(getX(), vec.getX(), epsilon)
 				&& Compare.eEquals(getY(), vec.getY(), epsilon)
-				&& Compare.eEquals(getZ(), vec.getZ(), epsilon)	;
+				&& Compare.eEquals(getZ(), vec.getZ(), epsilon);
 	}
 
 	/**
 	 * Compares this Vec3D against the specified Vec3D with epsilon.
-	 * 
+	 *
 	 * @param vec
 	 *            the vector to compare with.
 	 * @return {@code true} if the objects are considered equal; {@code false}
@@ -363,10 +363,10 @@ public class Vec3D {
 	public boolean eEquals(Vec3D vec) {
 		return eEquals(vec, Compare.EPSILON);
 	}
-	
+
 	/**
 	 * Returns String representation of this vector
-	 * 
+	 *
 	 * @return comma separated floating-point values in brackets
 	 */
 	@Override
@@ -378,7 +378,7 @@ public class Vec3D {
 	 * Returns String representation of this vector with coordinates formated
 	 * according to the given format, see
 	 * {@link String#format(String, Object...)}
-	 * 
+	 *
 	 * @param format
 	 *            String format applied to each coordinate
 	 * @return comma separated floating-point values in brackets
@@ -389,9 +389,90 @@ public class Vec3D {
 	}
 
 
-
 	public void normSelf(){
-		double l = Math.sqrt(this.getX()*this.getX() + this.getY()+ this.getY() + this.getZ()* this.getZ());
-		this.mul(1/l);
+		if (Double.isInfinite(x) || Double.isInfinite(y) || Double.isInfinite(z)){
+			if(Double.isInfinite(x)){
+				if (x > 0){
+					x = 1;
+				} else {
+					x=-1;
+				}
+			} else {
+				x = 0;
+			}
+
+			if(Double.isInfinite(y)){
+				if (y > 0){
+					y = 1;
+				} else {
+					y=-1;
+				}
+			} else {
+				y = 0;
+			}
+
+			if(Double.isInfinite(z)){
+				if (z > 0){
+					z = 1;
+				} else {
+					z=-1;
+				}
+			} else {
+				z = 0;
+			}
+		}
+
+		if (Double.isNaN(x)){
+			x = 0;
+		}
+		if (Double.isNaN(y)){
+			y = 0;
+		}
+		if (Double.isNaN(z)){
+			z = 0;
+		}
+
+		double l = Math.sqrt(this.getX()*this.getX() + this.getY()*this.getY() + this.getZ()*this.getZ());
+		// Check for zero, infinity, or NaN values
+		if (l == 0 || Double.isInfinite(l) || Double.isNaN(l)) {
+			// Handle the edge case, e.g., by setting to a default normalized vector or zero vector
+			if(x>0){
+				x = 1;
+			}else{
+				x = -1;
+			}
+
+			if(y>0){
+				y = 1;
+			}else{
+				y = -1;
+			}
+
+			if(z>0){
+				z = 1;
+			}else{
+				z = -1;
+			}
+
+			l = Math.sqrt(this.getX()*this.getX() + this.getY()*this.getY() + this.getZ()*this.getZ());
+		}
+		// Normal normalization process
+		x /= l;
+		y /= l;
+		z /= l;
+	}
+
+	public Vec3D crossProduct(Vec3D a){
+		Vec3D out = new Vec3D();
+		out.setX(a.getY() * this.getZ() - a.getZ() * this.getY());
+		out.setY(a.getZ() * this.getX() - a.getX() * this.getZ());
+		out.setZ(a.getX() * this.getY() - a.getY() * this.getX());
+		return out;
+	}
+
+	public double dotProduct(Vec3D a){
+		return  a.getX() * this.getX() +
+				a.getY() * this.getY() +
+				a.getZ() * this.getZ();
 	}
 }
