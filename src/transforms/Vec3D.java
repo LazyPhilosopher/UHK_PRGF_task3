@@ -119,17 +119,32 @@ public class Vec3D {
 	}
 
 	/**
+	 * Adds _x to the x coordinate
+	 */
+	public void addX(double _x) {this.x += _x;}
+
+	/**
+	 * Adds _y the y coordinate
+	 */
+	public void addY(double _y) {this.y += _y;}
+
+	/**
+	 * Adds _z to the z coordinate
+	 */
+	public void addZ(double _z) {this.z += _z;}
+
+	/**
 	 * Set the x coordinate
 	 */
 	public void setX(double _x) {this.x = _x;}
 
 	/**
-	 * Set the x coordinate
+	 * Set the y coordinate
 	 */
 	public void setY(double _y) {this.y = _y;}
 
 	/**
-	 * Set the x coordinate
+	 * Set the z coordinate
 	 */
 	public void setZ(double _z) {this.z = _z;}
 
@@ -464,9 +479,9 @@ public class Vec3D {
 
 	public Vec3D crossProduct(Vec3D a){
 		Vec3D out = new Vec3D();
-		out.setX(a.getY() * this.getZ() - a.getZ() * this.getY());
-		out.setY(a.getZ() * this.getX() - a.getX() * this.getZ());
-		out.setZ(a.getX() * this.getY() - a.getY() * this.getX());
+		out.setX(this.getY() * a.getZ() - this.getZ() * a.getY());
+		out.setY(this.getZ() * a.getX() - this.getX() * a.getZ());
+		out.setZ(this.getX() * a.getY() - this.getY() * a.getX());
 		return out;
 	}
 

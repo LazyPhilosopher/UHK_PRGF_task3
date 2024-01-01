@@ -139,7 +139,7 @@ public class PolygonRasterizer extends LineRasterizer {
                 }
             }
         }
-//        drawShallowPolygon(polygon, 0x0000FF);
+        drawShallowPolygon(polygon, 0x0000FF);
     }
 
     public void drawShallowPolygon(Polygon2D polygon, int int_color){

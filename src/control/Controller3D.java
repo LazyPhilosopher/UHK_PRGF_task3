@@ -7,8 +7,6 @@ import rasterize.LineRasterizerGraphics;
 import rasterize.PolygonRasterizer;
 import rasterize.Raster;
 import renderer.WiredRenderer;
-import solid.Cube;
-import solid.Solid;
 import transforms.*;
 import view.Panel;
 
@@ -16,6 +14,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.List;
 import java.util.Timer;
 
 public class Controller3D implements Controller {
@@ -27,36 +26,19 @@ public class Controller3D implements Controller {
     private float elapsed_time = 0;
     private boolean in_progress = false;
 
-    private Vec3D camera = new Vec3D(0,0,0);
+    private Vec3D camera_position_vector = new Vec3D(-25.9, 0.9,22.6);
     private Vec3D look_direction = new Vec3D(0,0,1);
     private Vec3D light_direction = new Vec3D(1,1,0);
-    private float azimuth = 0;
+    private Vec3D scene_up_vector = new Vec3D(0,1,0);
+
+    private float azimuth = (float) -2.3;
     private Mat4 proj;
 
-    Mesh cube = new Mesh(new ArrayList<>(Arrays.asList(
-            new Triangle3D(new Vec3D(0, 0, 0), new Vec3D(0, 1, 0), new Vec3D(1, 1, 0), new Color(0xFF0000)),
-            new Triangle3D(new Vec3D(0, 0, 0), new Vec3D(1, 1, 0), new Vec3D(1, 0, 0), new Color(0xFF0000)),
-
-            new Triangle3D(new Vec3D(1, 0, 0), new Vec3D(1, 1, 0), new Vec3D(1, 1, 1), new Color(0xFF0000)),
-            new Triangle3D(new Vec3D(1, 0, 0), new Vec3D(1, 1, 1), new Vec3D(1, 0, 1), new Color(0xFF0000)),
-
-            new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(1, 1, 1), new Vec3D(0, 1, 1), new Color(0x00FF00)),
-            new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 1, 1), new Vec3D(0, 0, 1), new Color(0x00FF00)),
-
-            new Triangle3D(new Vec3D(0, 0, 1), new Vec3D(0, 1, 1), new Vec3D(0, 1, 0), new Color(0x00FF00)),
-            new Triangle3D(new Vec3D(0, 0, 1), new Vec3D(0, 1, 0), new Vec3D(0, 0, 0), new Color(0x00FF00)),
-
-            new Triangle3D(new Vec3D(0, 1, 0), new Vec3D(0, 1, 1), new Vec3D(1, 1, 1), new Color(0x0000FF)),
-            new Triangle3D(new Vec3D(0, 1, 0), new Vec3D(1, 1, 1), new Vec3D(1, 1, 0), new Color(0x0000FF)),
-
-            new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 0, 1), new Vec3D(0, 0, 0), new Color(0x0000FF)),
-            new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 0, 0), new Vec3D(1, 0, 0), new Color(0x0000FF))
-    )));
-
 //    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\VideoShip.obj");
-    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\teapot.obj");
+//    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\teapot.obj");
+//    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\axis.obj");
 //    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\tie_fighter.obj");
-//    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\mountains.obj");
+    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\mountains.obj");
     public Controller3D(Panel panel) {
         this.panel = panel;
         initObjects(panel.getRaster());
@@ -157,26 +139,22 @@ public class Controller3D implements Controller {
                 if (e.getKeyCode() == KeyEvent.VK_C) {
                     //TODO
                 }else if (e.getKeyCode() == KeyEvent.VK_UP) {
-                    camera.setZ(camera.getZ() + 8);
+                    camera_position_vector = camera_position_vector.add(look_direction.mul(1));
                 }else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-                    camera.setZ(camera.getZ() - 8);
+                    camera_position_vector = camera_position_vector.sub(look_direction.mul(1));
                 }else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-                    camera.setX(camera.getX() - 8);
+                    azimuth -= 0.01;
                 }else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-                    camera.setX(camera.getX() + 8);
-                }else if (e.getKeyCode() == KeyEvent.VK_E) {
-                    azimuth += 0.1;
-                }else if (e.getKeyCode() == KeyEvent.VK_Q) {
-                    azimuth -= 0.1;
+                    azimuth += 0.01;
                 }
                 if (e.getKeyCode() == KeyEvent.VK_W) {
-                    camera = camera.add(look_direction.mul(8));
+                    camera_position_vector.addY(.1);
                 }
                 if (e.getKeyCode() == KeyEvent.VK_S) {
-                    camera = camera.sub(look_direction.mul(8));
+                    camera_position_vector.addY(-.1);
                 }
-                System.out.println(azimuth*180/Math.PI);
-                System.out.println(new Mat4RotY(azimuth).Multiply3DVector(new Vec3D(0,0,1)));
+                System.out.println(azimuth);
+                System.out.println(camera_position_vector);
 
             }
         });
@@ -195,139 +173,207 @@ public class Controller3D implements Controller {
         panel.clear();
 
         renderer.setProj(proj);
-//        renderer.setView(camera.getViewMatrix());
-
-//        Solid cube = new Cube();
-//        cube.setModel(new Mat4Transl(1, 0, 0));
         look_direction = new Mat4RotY(azimuth).Multiply3DVector(new Vec3D(0,0,1));
         look_direction.normSelf();
 
-//        look_direction = new Vec3D(0.02,0.02,1);
-        Vec3D up = new Vec3D(0,1,0);
-        Vec3D target = camera.add(look_direction);
-        Mat4PointAt camera_matrix = new Mat4PointAt(camera, target, up);
+
+        Vec3D camera_look_direction_vector = camera_position_vector.add(look_direction);
+        Mat4PointAt camera_matrix = new Mat4PointAt(camera_position_vector, camera_look_direction_vector, scene_up_vector);
         Mat4 view_matrix = camera_matrix.Mat4QuickInverse();
 
         Mat4Proj proj_matrix = new Mat4Proj();
-//        Mat4RotX mat_rot_x = new Mat4RotX(Math.PI);
-//        Mat4RotY mat_rot_y = new Mat4RotY(Math.PI-elapsed_time);
-//        Mat4RotZ mat_rot_z = new Mat4RotZ(elapsed_time);
 
         Mat4 shift_matrix = new Mat4Identity();
-        shift_matrix = shift_matrix.mul(new Mat4RotX(Math.PI));
-        shift_matrix = shift_matrix.mul(new Mat4RotY(Math.PI-elapsed_time));
-        shift_matrix = shift_matrix.mul(new Mat4RotZ(elapsed_time));
-        shift_matrix = shift_matrix.mul(new Mat4Transl(new Vec3D(0,0,8)));
-//        world_matrix.mul(proj_matrix);
+//        shift_matrix = shift_matrix.mul(new Mat4RotX(Math.PI));
+//        shift_matrix = shift_matrix.mul(new Mat4RotY(Math.PI-elapsed_time));
+//        shift_matrix = shift_matrix.mul(new Mat4RotZ(elapsed_time));
+//        shift_matrix = shift_matrix.mul(new Mat4Transl(new Vec3D(0,0,0)));
 
-//        Triangle tri = new Triangle(new Vec3D(10,15,15), new Vec3D(10,15,15), new Color(0xFFFFFF));
-
-//        Vec3D zero_axis = proj_matrix.MultiplyVector(new Vec3D(0,0,0));
-//        Vec3D x_axis = proj_matrix.MultiplyVector(new Vec3D(1000,0,0));
-//        Vec3D y_axis = proj_matrix.MultiplyVector(new Vec3D(0,1000,0));
-//        Vec3D z_axis = proj_matrix.MultiplyVector(new Vec3D(0,0,1000));
-//        zero_axis = shift_matrix.Multiply3DVector(zero_axis);
-//        x_axis = shift_matrix.Multiply3DVector(x_axis);
-//        y_axis = shift_matrix.Multiply3DVector(y_axis);
-//        z_axis = shift_matrix.Multiply3DVector(z_axis);
-//        zero_axis = view_matrix.Multiply3DVector(zero_axis);
-//        x_axis = view_matrix.Multiply3DVector(x_axis);
-//        y_axis = view_matrix.Multiply3DVector(y_axis);
-//        z_axis = view_matrix.Multiply3DVector(z_axis);
-//        zero_axis = proj_matrix.Multiply3DVector(zero_axis);
-//        x_axis = proj_matrix.Multiply3DVector(x_axis);
-//        y_axis = proj_matrix.Multiply3DVector(y_axis);
-//        z_axis = proj_matrix.Multiply3DVector(z_axis);
-//        line_rasterizer.drawLine((int)zero_axis.getX(), (int)zero_axis.getY(), (int)x_axis.getX(), (int)x_axis.getY(), new Color(0x00FF00));
-//        line_rasterizer.drawLine((int)zero_axis.getX(), (int)zero_axis.getY(), (int)y_axis.getX(), (int)y_axis.getY(), new Color(0xFF0000));
-//        line_rasterizer.drawLine((int)zero_axis.getX(), (int)zero_axis.getY(), (int)z_axis.getX(), (int)z_axis.getY(), new Color(0xFFFFFF));
 
         ArrayList<Triangle3D> polygons = new ArrayList<>();
         for (Triangle3D tri : tie.polygons){
 
-//            Triangle3D rot_X_triangle = mat_rot_x.Multiply3DTriangle(tri);
-//            Triangle3D rot_XY_triangle = mat_rot_y.Multiply3DTriangle(rot_X_triangle);
-//            Triangle3D rot_XYZ_triangle = mat_rot_z.Multiply3DTriangle(rot_XY_triangle);
-//            rot_XYZ_triangle.shift_Z(8.0);
-//            Triangle3D projected_triangle = proj_matrix.Multiply3DTriangle(rot_XYZ_triangle);
-
-//            Triangle3D triangle_view = view_matrix.Multiply3DTriangle(tri);
+            // translate and rotate origin triangle
             Triangle3D shifted_triangle = shift_matrix.Multiply3DTriangle(tri);
-
-
-            Vec3D line1 = new Vec3D();
-            Vec3D line2 = new Vec3D();
-            Vec3D norm = new Vec3D();
-
-            line1.setX(shifted_triangle.b.getX() -  shifted_triangle.a.getX());
-            line1.setY(shifted_triangle.b.getY() -  shifted_triangle.a.getY());
-            line1.setZ(shifted_triangle.b.getZ() -  shifted_triangle.a.getZ());
-
-            line2.setX(shifted_triangle.c.getX() -  shifted_triangle.a.getX());
-            line2.setY(shifted_triangle.c.getY() -  shifted_triangle.a.getY());
-            line2.setZ(shifted_triangle.c.getZ() -  shifted_triangle.a.getZ());
-
-            Vec3D sight = new Vec3D();
-            sight.setX(shifted_triangle.a.getX() - camera.getX());
-            sight.setY(shifted_triangle.a.getY() - camera.getY());
-            sight.setZ(shifted_triangle.a.getZ() - camera.getZ());
-
-            line1.normSelf();
-            line2.normSelf();
-            norm = line1.crossProduct(line2);
+            Vec3D norm = shifted_triangle.calculateNorm();
             norm.normSelf();
 
+            Vec3D sight = new Vec3D();
+            sight.setX(shifted_triangle.a.getX() - camera_position_vector.getX());
+            sight.setY(shifted_triangle.a.getY() - camera_position_vector.getY());
+            sight.setZ(shifted_triangle.a.getZ() - camera_position_vector.getZ());
+
+            // transform triangle to form viewed from camera perspective
             Triangle3D triangle_view = view_matrix.Multiply3DTriangle(shifted_triangle);
 
-            Triangle3D projected_triangle =  proj_matrix.Multiply3DTriangle(triangle_view);
-            projected_triangle.setNorm(norm);
-            projected_triangle.color = tri.color;
+            List<Triangle3D> clipped_triangles = triangleClipAgainstPlane(new Vec3D(0,0,0.1), new Vec3D(0,0,1), triangle_view);
 
+            for(Triangle3D clipped_triangle : clipped_triangles){
+                // project triangle to 2D space (Z-axis used for distance measurement)
+                Triangle3D projected_triangle =  proj_matrix.Multiply3DTriangle(clipped_triangle);
+                projected_triangle.setNorm(norm);
+                projected_triangle.color = clipped_triangle.color;
 
-
-
-            if(projected_triangle.norm.dotProduct(sight) < 0){
-                continue;
+                if(projected_triangle.norm.dotProduct(sight) >= 0){
+                    continue;
+                }
+                else {
+                    polygons.add(projected_triangle);
+                }
             }
-            else {
-                polygons.add(projected_triangle);
-            }
-
-
 
         }
         // Sort the list based on the Z attribute
         polygons.sort((tri1, tri2) -> Double.compare(tri2.a.getZ() + tri2.b.getZ() + tri2.c.getZ(), tri1.a.getZ() + tri1.b.getZ() + tri1.c.getZ()));
 
-        for(Triangle3D projected_triangle : polygons){
+        for(Triangle3D rasterized_triangle : polygons){
 
-            Triangle2D triangle_2D_projected = new Triangle2D(projected_triangle);
-            triangle_2D_projected.shift_XY(1.0, 1.0);
-            triangle_2D_projected.mul_XY(0.5 * panel.getHeight(), 0.5 * panel.getWidth());
+			List<Triangle3D> clipped = new ArrayList<>();
+            List<Triangle3D> listTriangles = new ArrayList<>();
 
+			// Add initial triangle
+			listTriangles.add(rasterized_triangle);
+			int nNewTriangles = 1;
 
+			for (int p = 0; p < 4; p++)
+			{
+				int nTrisToAdd = 0;
+				while (nNewTriangles > 0)
+				{
+					// Take triangle from front of queue
+					Triangle3D test = listTriangles.get(0);
+					listTriangles.remove(0);
+					nNewTriangles--;
 
-            light_direction.normSelf();
-//            projected_triangle.norm = projected_triangle.
-//            projected_triangle.norm.normSelf();
-//            System.out.println(light_direction.dotProduct(projected_triangle.norm)/2.001+0.5);
-            double light_amount = (light_direction.dotProduct(projected_triangle.norm)/2.001+0.5);
-            Color color = new Color((int)(projected_triangle.color.getRed()*light_amount),
-                    (int)(projected_triangle.color.getGreen()*light_amount),
-                    (int)(projected_triangle.color.getBlue()*light_amount));
+					switch (p)
+					{
+                        case 0:
+//                            Vec3D y_up_norm = new Vec3D(0,1,0);
+//                            Mat4RotX rotation_x = new Mat4RotX(proj_matrix.getFieldOfView()/2);
+                            Vec3D y_up_norm = new Vec3D(0,1,-0.09);
+//                            y_up_norm = new Mat4RotX(-90).Multiply3DVector(new Vec3D(0,0,1));
+                            clipped = triangleClipAgainstPlane(new Vec3D(0,0,0), y_up_norm, test);
+//                            nTrisToAdd = clipped.size();
+                            break;
+                        case 1:
+//                        nTrisToAdd = Triangle_ClipAgainstPlane({ 0.0f, (float)ScreenHeight() - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
+                            clipped = triangleClipAgainstPlane(new Vec3D(0,0,0), new Vec3D(0,-1,-0.04), test);
+//                            nTrisToAdd = clipped.size();
+                            break;
+                        case 2:
+//                            nTrisToAdd = Triangle_ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
+                            clipped = triangleClipAgainstPlane(new Vec3D(0,0,0), new Vec3D(1,0,-0.08), test);
+//                            nTrisToAdd = clipped.size();
+                            break;
+                        case 3:
+//                            nTrisToAdd = Triangle_ClipAgainstPlane({ (float)ScreenWidth() - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
+                            clipped = triangleClipAgainstPlane(new Vec3D(0,0,0), new Vec3D(-1,0,-0.15), test);
+//                            nTrisToAdd = clipped.size();
+                            break;
+					}
 
-            Polygon2D polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
-                    new Point((int)triangle_2D_projected.a_x, (int)triangle_2D_projected.a_y),
-                    new Point((int)triangle_2D_projected.b_x, (int)triangle_2D_projected.b_y),
-                    new Point((int)triangle_2D_projected.c_x, (int)triangle_2D_projected.c_y)
-            )),
-                    color);
+					// Clipping may yield a variable number of triangles, so
+					// add these new ones to the back of the queue for subsequent
+					// clipping against next planes
+                    listTriangles.addAll(clipped);
+				}
+				nNewTriangles = listTriangles.size();
+			}
+            for (Triangle3D triangle : listTriangles)
+            {
+                Triangle2D triangle_2D_projected = new Triangle2D(triangle);
+                triangle_2D_projected.shift_XY(1.0, 1.0);
+                triangle_2D_projected.mul_XY(0.5 * panel.getHeight(), 0.5 * panel.getWidth());
 
-            renderer.polygonRasterizer.drawFilledTriangle(polygon, color);
+                light_direction.normSelf();
+                double light_amount = (light_direction.dotProduct(rasterized_triangle.norm)/2.001+0.5);
+                Color color = new Color((int)(rasterized_triangle.color.getRed()*light_amount),
+                        (int)(rasterized_triangle.color.getGreen()*light_amount),
+                        (int)(rasterized_triangle.color.getBlue()*light_amount));
+
+                Polygon2D polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
+                        new Point((int)triangle_2D_projected.a_x, (int)triangle_2D_projected.a_y),
+                        new Point((int)triangle_2D_projected.b_x, (int)triangle_2D_projected.b_y),
+                        new Point((int)triangle_2D_projected.c_x, (int)triangle_2D_projected.c_y)
+                )),
+                        color);
+
+                renderer.polygonRasterizer.drawFilledTriangle(polygon, color);
+            }
         }
 
         panel.repaint();
         in_progress = false;
+    }
+
+    Vec3D vectorIntersectPlane(Vec3D plane_point, Vec3D plane_normal, Vec3D line_start, Vec3D line_end){
+        plane_normal.normSelf();
+        double plane_d = -plane_point.dotProduct(plane_normal);
+        double ad = plane_normal.dotProduct(line_start);
+        double bd = plane_normal.dotProduct(line_end);
+        double t = (-plane_d - ad) / (bd - ad);
+        Vec3D line_start_to_end = line_end.sub(line_start);
+        Vec3D line_to_intersect = line_start_to_end.mul(t);
+        return line_start.add(line_to_intersect);
+    }
+
+    double pointPlaneDistance(Vec3D plane_normal, Vec3D plane_point, Vec3D point){
+        plane_normal.normSelf();
+        return (plane_normal.dotProduct(point) - plane_point.dotProduct(plane_normal));
+    }
+
+    List<Triangle3D> triangleClipAgainstPlane(Vec3D plane_point, Vec3D plane_normal, Triangle3D input_triangle){
+        plane_normal.normSelf();
+        double d0 = pointPlaneDistance(plane_normal, plane_point, input_triangle.a);
+        double d1 = pointPlaneDistance(plane_normal, plane_point, input_triangle.b);
+        double d2 = pointPlaneDistance(plane_normal, plane_point, input_triangle.c);
+        List<Vec3D> inside_points = new ArrayList<>();
+        List<Vec3D> outside_points = new ArrayList<>();
+
+        if(d0 > 0){inside_points.add(input_triangle.a);
+        } else {outside_points.add(input_triangle.a);}
+        if(d1 > 0){inside_points.add(input_triangle.b);
+        } else {outside_points.add(input_triangle.b);}
+        if(d2 > 0){inside_points.add(input_triangle.c);
+        } else {outside_points.add(input_triangle.c);}
+
+        List<Triangle3D> output = new ArrayList<>();
+        if(inside_points.size() == 3){
+            output.add(input_triangle);
+            // return input triangle
+        }
+        else if (outside_points.size() == 3){
+            // do nothing
+        }
+        else if(inside_points.size() == 1 && outside_points.size() == 2){
+            Triangle3D out1 = new Triangle3D();
+//            out1.color = new Color(0x0000FF);
+            out1.color = input_triangle.color;
+
+            out1.a = inside_points.get(0);
+            out1.b = vectorIntersectPlane(plane_point, plane_normal, out1.a, outside_points.get(0));
+            out1.c = vectorIntersectPlane(plane_point, plane_normal, out1.a, outside_points.get(1));
+            output.add(out1);
+        }
+        else if(inside_points.size() == 2 && outside_points.size() == 1){
+            Triangle3D out1 = new Triangle3D();
+            Triangle3D out2 = new Triangle3D();
+            out1.color = input_triangle.color;
+            out2.color = input_triangle.color;
+//            out1.color = new Color(0xFF0000);
+//            out2.color = new Color(0x00FF00);
+
+            out1.a = inside_points.get(0);
+            out1.b = inside_points.get(1);
+            out1.c = vectorIntersectPlane(plane_point, plane_normal, out1.a, outside_points.get(0));
+
+            out2.a = inside_points.get(1);
+            out2.b = out1.c;
+            out2.c = vectorIntersectPlane(plane_point, plane_normal, out1.b, outside_points.get(0));
+            output.add(out1);
+            output.add(out2);
+        }
+        return output;
     }
 
     private void hardClear() {
@@ -346,19 +392,4 @@ public class Controller3D implements Controller {
             }
         }, 0, 50);
     }
-
-//    public Vec3D crossProduct(Vec3D a, Vec3D b){
-//        Vec3D out = new Vec3D();
-//        out.setX(a.getY() * b.getZ() - a.getZ() * b.getY());
-//        out.setY(a.getZ() * b.getX() - a.getX() * b.getZ());
-//        out.setZ(a.getX() * b.getY() - a.getY() * b.getX());
-//        return out;
-//    }
-//
-//    public double dotProduct(Vec3D a, Vec3D b){
-//        return  a.getX() * b.getX() +
-//                a.getY() * b.getY() +
-//                a.getZ() * b.getZ();
-//    }
-
 }

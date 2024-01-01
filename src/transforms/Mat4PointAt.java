@@ -18,7 +18,7 @@ public class Mat4PointAt extends Mat4Identity {
 
         mat[0][0] = new_right.getX();   mat[0][1] = new_right.getY();   mat[0][2] = new_right.getZ();   mat[0][3] = 0;
         mat[1][0] = new_up.getX();      mat[1][1] = new_up.getY();      mat[1][2] = new_up.getZ();      mat[1][3] = 0;
-        mat[2][0] = new_forward.getZ(); mat[2][1] = new_forward.getZ(); mat[2][2] = new_forward.getZ(); mat[2][3] = 0;
+        mat[2][0] = new_forward.getX(); mat[2][1] = new_forward.getY(); mat[2][2] = new_forward.getZ(); mat[2][3] = 0;
         mat[3][0] = position.getX();    mat[3][1] = position.getY();    mat[3][2] = position.getZ();    mat[3][3] = 1;
     }
 }

@@ -3,9 +3,9 @@ package transforms;
 public class Mat4Proj extends Mat4Identity {
     private final double near = 0.1;
     private double far = 1000.0;
-    private double field_fo_view = 160.0;
+    private double field_of_view = 120.0;
     private double aspect_ratio = (double) 640 / (double) 480;
-    private double rad_field_of_view = 1.0 / Math.tan(field_fo_view * 0.5f / 180.0 * Math.PI);
+    private double rad_field_of_view = 1.0 / Math.tan(field_of_view * 0.5f / 180.0 * Math.PI);
 
     public Mat4Proj(){
         mat[0][0] = aspect_ratio * rad_field_of_view;
@@ -30,4 +30,6 @@ public class Mat4Proj extends Mat4Identity {
         }
         return o;
     }
+
+    public double getFieldOfView(){return field_of_view;}
 }

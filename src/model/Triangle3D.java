@@ -49,4 +49,25 @@ public class Triangle3D {
     public void setNorm(Vec3D norm){
         this.norm = norm;
     }
+
+    public Vec3D calculateNorm(){
+        Vec3D line1 = new Vec3D();
+        Vec3D line2 = new Vec3D();
+        Vec3D norm = new Vec3D();
+
+        line1.setX(this.b.getX() -  this.a.getX());
+        line1.setY(this.b.getY() -  this.a.getY());
+        line1.setZ(this.b.getZ() -  this.a.getZ());
+
+        line2.setX(this.c.getX() -  this.a.getX());
+        line2.setY(this.c.getY() -  this.a.getY());
+        line2.setZ(this.c.getZ() -  this.a.getZ());
+
+        line1.normSelf();
+        line2.normSelf();
+        norm = line1.crossProduct(line2);
+        norm.normSelf();
+
+        return norm;
+    }
 }
