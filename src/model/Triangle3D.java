@@ -1,5 +1,6 @@
 package model;
 
+import transforms.Vec2D;
 import transforms.Vec3D;
 
 import java.awt.Color;
@@ -7,12 +8,18 @@ import java.awt.Color;
 public class Triangle3D {
     public Vec3D a, b, c, norm;
     public  Color color;
+    public Vec2D t1, t2, t3;
 
     public Triangle3D(){
         this.a = new Vec3D(0,0,0);
         this.b = new Vec3D(0,0,0);
         this.c = new Vec3D(0,0,0);
         this.color = new Color(0xFFFFFF);
+    }
+
+    public Triangle3D(Vec3D a, Vec3D b, Vec3D c, Vec2D t1, Vec2D t2, Vec2D t3){
+        this.a = a; this.b = b; this.c = c;
+        this.t1 = t1; this.t2 = t2; this.t3 = t3;
     }
 
     public Triangle3D(Vec3D _a, Vec3D _b, Vec3D _c, Color _color){
