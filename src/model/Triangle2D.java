@@ -1,5 +1,7 @@
 package model;
 
+import transforms.Vec2D;
+
 public class Triangle2D {
     public double a_x, a_y,b_x,b_y,c_x,c_y;
 
@@ -10,6 +12,15 @@ public class Triangle2D {
         this.b_y = _b_y;
         this.c_x = _c_x;
         this.c_y = _c_y;
+    }
+
+    public Triangle2D(Vec2D a, Vec2D b, Vec2D c){
+        this.a_x = a.getX();
+        this.a_y = a.getY();
+        this.b_x = b.getX();
+        this.b_y = b.getY();;
+        this.c_x = c.getX();
+        this.c_y = c.getY();;
     }
 
     public Triangle2D(Triangle3D triangle3D){

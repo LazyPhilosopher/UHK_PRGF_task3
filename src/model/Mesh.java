@@ -13,6 +13,8 @@ import java.util.List;
 
 public class Mesh {
     public ArrayList<Triangle3D> polygons;
+    public ArrayList<Triangle2D> texture_polygons;
+
 
     public Mesh(ArrayList<Triangle3D> _polygons){
         this.polygons = _polygons;
