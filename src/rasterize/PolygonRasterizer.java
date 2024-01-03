@@ -1,5 +1,7 @@
 package rasterize;
 
+import control.PNGSprite;
+import control.Sprite;
 import model.Point;
 import model.Polygon2D;
 
@@ -146,7 +148,7 @@ public class PolygonRasterizer extends LineRasterizer {
         for (Point pixel : get_polygon_pixels(polygon)){raster.setPixel(pixel.X(), pixel.Y(), int_color);}
     }
 
-    public void drawTexturedTriangle(Polygon2D screen_polygon, Polygon2D texture_polygon){
+    public void drawTexturedTriangle(Polygon2D screen_polygon, Polygon2D texture_polygon, PNGSprite sprite){
         double screen_x1,   screen_y1,  screen_x2,  screen_y2,  screen_x3,  screen_y3;
         double texture_x1,  texture_y1, texture_x2, texture_y2, texture_x3, texture_y3;
 
@@ -224,9 +226,9 @@ public class PolygonRasterizer extends LineRasterizer {
                 double bx = screen_x1 + (i-screen_y1) * dbx_step;
 
                 double tex_sx = texture_x1 + (i-screen_y1) * texture_dx1_step;
-                double tex_sy = texture_y1 + (i-screen_y1) * texture_dy1_step;
-
                 double tex_ex = texture_x1 + (i-screen_y1) * texture_dx2_step;
+
+                double tex_sy = texture_y1 + (i-screen_y1) * texture_dy1_step;
                 double tex_ey = texture_y1 + (i-screen_y1) * texture_dy2_step;
 
                 if(ax > bx){
@@ -246,7 +248,11 @@ public class PolygonRasterizer extends LineRasterizer {
                     texture_x = (1-t) * tex_sx + t * tex_ex;
                     texture_y = (1-t) * tex_sy + t * tex_ey;
 
-                    raster.setPixel((int)j, (int)i, 0x005500);
+//                    double test_y = tex_sy + ((ax-j)/bx) * (tex_sy - tex_ex);
+//                    double test_x = tex_sx + ((j-ax)/bx) * (tex_sx - tex_ey);
+                    double test_x = tex_sx + ((ax-j)/bx) * (tex_ex - tex_sx);
+                    double test_y = tex_sy + ((i-screen_y1)/screen_y2) * (tex_ey - tex_sy);
+                    raster.setPixel((int)j, (int)i, sprite.getColour(test_x, test_y).getRGB());
                     t += tstep;
                 }
             }
@@ -291,7 +297,8 @@ public class PolygonRasterizer extends LineRasterizer {
                     texture_x = (1-t) * tex_sx + t * tex_ex;
                     texture_y = (1-t) * tex_sy + t * tex_ey;
 
-                    raster.setPixel((int)j, (int)i, 0x005500);
+
+//                    raster.setPixel((int)j, (int)i, sprite.getColour(texture_x, texture_y).getRGB());
                     t += tstep;
                 }
             }
