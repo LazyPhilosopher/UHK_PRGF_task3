@@ -51,7 +51,8 @@ public class PNGSprite {
 
     public int getColour(double x, double y) {
         if (isPositionValid(x, y)) {
-            return this.pixelData[(int)(x*(nWidth-1))][(int)(y*(nHeight-1))];
+            x %= 0.999; y %= 0.999;
+            return this.pixelData[(int) (x*(nWidth))][(int) (y*(nHeight))];
         } else {
             return 0x0;
         }

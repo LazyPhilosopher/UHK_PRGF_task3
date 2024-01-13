@@ -233,7 +233,7 @@ public class Controller3D implements Controller {
             triangle_view.t1 = shifted_triangle.t1; triangle_view.t2 = shifted_triangle.t2; triangle_view.t3 = shifted_triangle.t3;
 
             // clip polygons too close in front of camera
-            List<Triangle3D> far_enough_clipped_triangles = triangleClipAgainstPlane(new Vec3D(0,0,10), new Vec3D(0,0,1), triangle_view);
+            List<Triangle3D> far_enough_clipped_triangles = triangleClipAgainstPlane(new Vec3D(0,0,1), new Vec3D(0,0,1), triangle_view);
 
             // clip polygons too far in front of camera
             List<Triangle3D> clipped_triangles = new ArrayList<>();
