@@ -213,10 +213,11 @@ public class Controller3D implements Controller {
 
 
         ArrayList<Triangle3D> polygons = new ArrayList<>();
-        for (Triangle3D tri : tie.polygons){
+        for (Triangle3D tri : cube.polygons){
 
             // translate and rotate origin triangle
             Triangle3D shifted_triangle = shift_matrix.Multiply3DTriangle(tri);
+            shifted_triangle.t1 = tri.t1; shifted_triangle.t2 = tri.t2; shifted_triangle.t3 = tri.t3;
             Vec3D norm = shifted_triangle.calculateNorm();
 //            norm.normSelf();
 
@@ -227,6 +228,8 @@ public class Controller3D implements Controller {
 
             // transform triangle to form viewed from camera perspective
             Triangle3D triangle_view = view_matrix.Multiply3DTriangle(shifted_triangle);
+            triangle_view.color = shifted_triangle.color;
+            triangle_view.t1 = shifted_triangle.t1; triangle_view.t2 = shifted_triangle.t2; triangle_view.t3 = shifted_triangle.t3;
 
             // clip polygons too close in front of camera
             List<Triangle3D> far_enough_clipped_triangles = triangleClipAgainstPlane(new Vec3D(0,0,10), new Vec3D(0,0,1), triangle_view);
@@ -242,6 +245,7 @@ public class Controller3D implements Controller {
                 Triangle3D projected_triangle =  proj_matrix.Multiply3DTriangle(clipped_triangle);
                 projected_triangle.setNorm(norm);
                 projected_triangle.color = clipped_triangle.color;
+                projected_triangle.t1 = clipped_triangle.t1; projected_triangle.t2 = clipped_triangle.t2; projected_triangle.t3 = clipped_triangle.t3;
 
                 // visible triangle norm shall aim outside the mesh
                 if(projected_triangle.norm.dotProduct(sight_vector) >= 0){
@@ -307,8 +311,14 @@ public class Controller3D implements Controller {
                         new Point((int)triangle_2D_projected.c_x, (int)triangle_2D_projected.c_y)
                 )),
                         color);
-
-                renderer.polygonRasterizer.drawFilledTriangle(polygon, color);
+                Polygon2D texture_polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
+                        new Point((int)triangle.t1.getX(), (int)triangle.t1.getY()),
+                        new Point((int)triangle.t2.getX(), (int)triangle.t2.getY()),
+                        new Point((int)triangle.t3.getX(), (int)triangle.t3.getY())
+                )),
+                        new Color(0x0000FF));
+                PNGSprite sprite = new PNGSprite("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\creeper.png");
+                renderer.polygonRasterizer.drawTexturedTriangle(polygon, texture_polygon, sprite);
             }
         }
 
@@ -318,7 +328,8 @@ public class Controller3D implements Controller {
         in_progress = false;
     }
 
-    Vec3D vectorIntersectPlane(Vec3D plane_point, Vec3D plane_normal, Vec3D line_start, Vec3D line_end){
+    HashMap<String, Object> vectorIntersectPlane(Vec3D plane_point, Vec3D plane_normal, Vec3D line_start, Vec3D line_end){
+        HashMap<String, Object> output = new HashMap<>();
         plane_normal.normSelf();
         double plane_d = -plane_point.dotProduct(plane_normal);
         double ad = plane_normal.dotProduct(line_start);
@@ -326,7 +337,9 @@ public class Controller3D implements Controller {
         double t = (-plane_d - ad) / (bd - ad);
         Vec3D line_start_to_end = line_end.sub(line_start);
         Vec3D line_to_intersect = line_start_to_end.mul(t);
-        return line_start.add(line_to_intersect);
+        output.put("vector", line_start.add(line_to_intersect));
+        output.put("t", t);
+        return output;
     }
 
     double pointPlaneDistance(Vec3D plane_normal, Vec3D plane_point, Vec3D point){
@@ -341,23 +354,31 @@ public class Controller3D implements Controller {
         double d2 = pointPlaneDistance(plane_normal, plane_point, input_triangle.c);
         List<Vec3D> inside_points = new ArrayList<>();
         List<Vec3D> outside_points = new ArrayList<>();
+        List<Vec2D> inside_textures = new ArrayList<>();
+        List<Vec2D> outside_textures = new ArrayList<>();
 
-        if(d0 > 0){inside_points.add(input_triangle.a);
-        } else {outside_points.add(input_triangle.a);}
-        if(d1 > 0){inside_points.add(input_triangle.b);
-        } else {outside_points.add(input_triangle.b);}
-        if(d2 > 0){inside_points.add(input_triangle.c);
-        } else {outside_points.add(input_triangle.c);}
+        // Put input triangle coordinates either to inside or outside lists.
+        if(d0 > 0){
+            inside_points.add(input_triangle.a); inside_textures.add(input_triangle.t1);
+        } else {
+            outside_points.add(input_triangle.a); outside_textures.add(input_triangle.t1);}
+        if(d1 > 0){
+            inside_points.add(input_triangle.b); inside_textures.add(input_triangle.t2);
+        } else {
+            outside_points.add(input_triangle.b); outside_textures.add(input_triangle.t2);}
+        if(d2 > 0){
+            inside_points.add(input_triangle.c); inside_textures.add(input_triangle.t3);
+        } else {
+            outside_points.add(input_triangle.c); outside_textures.add(input_triangle.t3);
+        }
 
         List<Triangle3D> output = new ArrayList<>();
         if(inside_points.size() == 3){
-            // return input triangle
             output.add(input_triangle);
-            return output;
+            // return input triangle
         }
         else if (outside_points.size() == 3){
-            // return empty list
-            return output;
+            // do nothing
         }
         else if(inside_points.size() == 1 && outside_points.size() == 2){
             Triangle3D out1 = new Triangle3D();
@@ -365,8 +386,24 @@ public class Controller3D implements Controller {
             out1.color = input_triangle.color;
 
             out1.a = inside_points.get(0);
-            out1.b = vectorIntersectPlane(plane_point, plane_normal, out1.a, outside_points.get(0));
-            out1.c = vectorIntersectPlane(plane_point, plane_normal, out1.a, outside_points.get(1));
+            out1.t1 = inside_textures.get(0);
+
+            double t, new_texture_x, new_texture_y;
+
+            HashMap<String, Object> out1_b_clipped = vectorIntersectPlane(plane_point, plane_normal, out1.a, outside_points.get(0));
+            out1.b = (Vec3D) out1_b_clipped.get("vector");
+            t = (double) out1_b_clipped.get("t");
+            new_texture_x = t*(outside_textures.get(0).getX() - inside_textures.get(0).getX()) + inside_textures.get(0).getX();
+            new_texture_y = t*(outside_textures.get(0).getY() - inside_textures.get(0).getY()) + inside_textures.get(0).getY();
+            out1.t2 = new Vec2D(new_texture_x, new_texture_y);
+
+            HashMap<String, Object> out1_c_clipped = vectorIntersectPlane(plane_point, plane_normal, out1.a, outside_points.get(1));
+            out1.c = (Vec3D) out1_c_clipped.get("vector");
+            t = (double) out1_c_clipped.get("t");
+            new_texture_x = t*(outside_textures.get(1).getX() - inside_textures.get(0).getX()) + inside_textures.get(0).getX();
+            new_texture_y = t*(outside_textures.get(1).getY() - inside_textures.get(0).getY()) + inside_textures.get(0).getY();
+            out1.t3 = new Vec2D(new_texture_x, new_texture_y);
+
             output.add(out1);
         }
         else if(inside_points.size() == 2 && outside_points.size() == 1){
@@ -379,11 +416,29 @@ public class Controller3D implements Controller {
 
             out1.a = inside_points.get(0);
             out1.b = inside_points.get(1);
-            out1.c = vectorIntersectPlane(plane_point, plane_normal, out1.a, outside_points.get(0));
+            out1.t1 = inside_textures.get(0);
+            out1.t2 = inside_textures.get(1);
+
+            double t, new_texture_x, new_texture_y;
+
+            HashMap<String, Object> out2_c_clipped = vectorIntersectPlane(plane_point, plane_normal, out1.a, outside_points.get(0));
+            out1.c = (Vec3D) out2_c_clipped.get("vector");
+            t = (double) out2_c_clipped.get("t");
+            new_texture_x = t*(outside_textures.get(0).getX() - inside_textures.get(0).getX()) + inside_textures.get(0).getX();
+            new_texture_y = t*(outside_textures.get(0).getY() - inside_textures.get(0).getY()) + inside_textures.get(0).getY();
+            out1.t3 = new Vec2D(new_texture_x, new_texture_y);
 
             out2.a = inside_points.get(1);
+            out2.t1 = inside_textures.get(1);
             out2.b = out1.c;
-            out2.c = vectorIntersectPlane(plane_point, plane_normal, out1.b, outside_points.get(0));
+            out2.t2 = out1.t3;
+
+            HashMap<String, Object> out1_c_clipped = vectorIntersectPlane(plane_point, plane_normal, out1.b, outside_points.get(0));
+            out2.c = (Vec3D) out1_c_clipped.get("vector");
+            t = (double) out1_c_clipped.get("t");
+            new_texture_x = t*(outside_textures.get(0).getX() - inside_textures.get(1).getX()) + inside_textures.get(1).getX();
+            new_texture_y = t*(outside_textures.get(0).getY() - inside_textures.get(1).getY()) + inside_textures.get(1).getY();
+            out2.t3 = new Vec2D(new_texture_x, new_texture_y);
 
             output.add(out1);
             output.add(out2);

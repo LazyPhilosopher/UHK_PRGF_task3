@@ -20,6 +20,12 @@ public class Mesh {
         this.polygons = _polygons;
     }
 
+//    // textured mesh
+//    public Mesh(ArrayList<Triangle3D> polygons, ArrayList<Triangle2D> textures){
+//        this.polygons = polygons;
+//        this.texture_polygons = textures;
+//    }
+
     public Mesh(String file_path){
 
         try {
