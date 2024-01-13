@@ -148,7 +148,7 @@ public class PolygonRasterizer extends LineRasterizer {
         for (Point pixel : get_polygon_pixels(polygon)){raster.setPixel(pixel.X(), pixel.Y(), int_color);}
     }
 
-    public void drawTexturedTriangle(Polygon2D screen_polygon, Polygon2D texture_polygon, PNGSprite sprite){
+    public void drawTexturedTriangle(Polygon2D screen_polygon, Polygon2D texture_polygon, PNGSprite sprite, double light_amount){
         List<Vec2D> screen = screen_polygon.getVertices();
         List<Vec2D> texture = texture_polygon.getVertices();
 
@@ -206,7 +206,9 @@ public class PolygonRasterizer extends LineRasterizer {
             for (double x = ax; x < bx; x++){
                 texture_x = (1-t) * tex_sx + t * tex_ex;
                 texture_y = (1-t) * tex_sy + t * tex_ey;
-                raster.setPixel((int)x, (int)y, sprite.getColour(texture_x, texture_y));
+                int color = sprite.getColor(texture_x, texture_y);
+                color = adjustBrightness(color, light_amount);
+                raster.setPixel((int)x, (int)y, color);
                 t += tstep;
             }
         }
@@ -222,15 +224,15 @@ public class PolygonRasterizer extends LineRasterizer {
         if(screen_dx1 != 0){ texture_dx1_step = texture_dx1 / screen_dy1; } else {texture_dx1_step = 0;}
         if(screen_dy1 != 0){ texture_dy1_step = texture_dy1 / screen_dy1; } else {texture_dy1_step = 0;}
 
-        for (double i = screen_y2; i < screen_y3; i++){
-            double ax = screen_x2 + (i-screen_y2) * dax_step;
-            double bx = screen_x1 + (i-screen_y1) * dbx_step;
+        for (double y = screen_y2; y < screen_y3; y++){
+            double ax = screen_x2 + (y-screen_y2) * dax_step;
+            double bx = screen_x1 + (y-screen_y1) * dbx_step;
 
-            double tex_sx = texture_x2 + (i-screen_y2) * texture_dx1_step;
-            double tex_sy = texture_y2 + (i-screen_y2) * texture_dy1_step;
+            double tex_sx = texture_x2 + (y-screen_y2) * texture_dx1_step;
+            double tex_sy = texture_y2 + (y-screen_y2) * texture_dy1_step;
 
-            double tex_ex = texture_x1 + (i-screen_y1) * texture_dx2_step;
-            double tex_ey = texture_y1 + (i-screen_y1) * texture_dy2_step;
+            double tex_ex = texture_x1 + (y-screen_y1) * texture_dx2_step;
+            double tex_ey = texture_y1 + (y-screen_y1) * texture_dy2_step;
 
             if(ax > bx){
                 double temp;
@@ -245,12 +247,12 @@ public class PolygonRasterizer extends LineRasterizer {
             double tstep = 1 / (bx - ax);
             double t = 0;
 
-            for (double j = ax; j < bx; j++){
+            for (double x = ax; x < bx; x++){
                 texture_x = (1-t) * tex_sx + t * tex_ex;
                 texture_y = (1-t) * tex_sy + t * tex_ey;
-
-
-                raster.setPixel((int)j, (int)i, sprite.getColour(texture_x, texture_y));
+                int color = sprite.getColor(texture_x, texture_y);
+                color = adjustBrightness(color, light_amount);
+                raster.setPixel((int)x, (int)y, color);
                 t += tstep;
             }
         }
@@ -275,6 +277,26 @@ public class PolygonRasterizer extends LineRasterizer {
             out.addAll(edge_points);
         }
         return out;
+    }
+
+    private static int adjustBrightness(int rgb, double brightnessFactor) {
+        // Extract RGB components
+        int red = (rgb >> 16) & 0xFF;
+        int green = (rgb >> 8) & 0xFF;
+        int blue = rgb & 0xFF;
+
+        // Apply brightness adjustment to each component
+        red = (int) (red * brightnessFactor);
+        green = (int) (green * brightnessFactor);
+        blue = (int) (blue * brightnessFactor);
+
+        // Ensure the values are within the valid range (0 to 255)
+        red = Math.min(255, Math.max(0, red));
+        green = Math.min(255, Math.max(0, green));
+        blue = Math.min(255, Math.max(0, blue));
+
+        // Reassemble the adjusted RGB value
+        return (red << 16) | (green << 8) | blue;
     }
 
 }

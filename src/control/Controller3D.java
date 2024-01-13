@@ -207,10 +207,10 @@ public class Controller3D implements Controller {
         Mat4Proj proj_matrix = new Mat4Proj();
 
         Mat4 shift_matrix = new Mat4Identity();
-//        shift_matrix = shift_matrix.mul(new Mat4RotX(Math.PI));
-//        shift_matrix = shift_matrix.mul(new Mat4RotY(Math.PI-elapsed_time));
-//        shift_matrix = shift_matrix.mul(new Mat4RotZ(elapsed_time));
-//        shift_matrix = shift_matrix.mul(new Mat4Transl(new Vec3D(0,0,0)));
+        shift_matrix = shift_matrix.mul(new Mat4RotX(Math.PI));
+        shift_matrix = shift_matrix.mul(new Mat4RotY(Math.PI-elapsed_time));
+        shift_matrix = shift_matrix.mul(new Mat4RotZ(elapsed_time));
+        shift_matrix = shift_matrix.mul(new Mat4Transl(new Vec3D(0,0,0)));
 
 
         ArrayList<Triangle3D> polygons = new ArrayList<>();
@@ -319,7 +319,7 @@ public class Controller3D implements Controller {
                 )),
                         new Color(0x0000FF));
                 PNGSprite sprite = new PNGSprite("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\creeper.png");
-                renderer.polygonRasterizer.drawTexturedTriangle(polygon, texture_polygon, sprite);
+                renderer.polygonRasterizer.drawTexturedTriangle(polygon, texture_polygon, sprite, light_amount);
             }
         }
 
