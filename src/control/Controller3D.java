@@ -26,12 +26,12 @@ public class Controller3D implements Controller {
     private float elapsed_time = 0;
     private boolean in_progress = false;
 
-    private Vec3D camera_position_vector = new Vec3D(56.2,14.3,-252.7);
+    private Vec3D camera_position_vector = new Vec3D( 7.5, 1.3,19.5);
     private Vec3D look_direction = new Vec3D(0,0,1);
     private Vec3D light_direction = new Vec3D(1,1,0);
     private Vec3D scene_up_vector = new Vec3D(0,1,0);
 
-    private float azimuth = (float) -6.220023;
+    private float azimuth = (float) -3.5;
     private Mat4 proj;
 
     //    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\VideoShip.obj");
@@ -39,6 +39,28 @@ public class Controller3D implements Controller {
 //    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\axis.obj");
 //    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\tie_fighter.obj");
     Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\mountains.obj");
+//    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\mountains.obj");
+
+    Mesh cube = new Mesh(new ArrayList<>(Arrays.asList(
+                new Triangle3D(new Vec3D(0, 0, 0), new Vec3D(0, 1, 0), new Vec3D(1, 1, 0), new Vec2D(0,1), new Vec2D(0,0), new Vec2D(1,0)),
+                new Triangle3D(new Vec3D(0, 0, 0), new Vec3D(1, 1, 0), new Vec3D(1, 0, 0), new Vec2D(0,1), new Vec2D(1,0), new Vec2D(1,1)),
+
+                new Triangle3D(new Vec3D(1, 0, 0), new Vec3D(1, 1, 0), new Vec3D(1, 1, 1), new Vec2D(0,1), new Vec2D(0,0), new Vec2D(1,0)),
+                new Triangle3D(new Vec3D(1, 0, 0), new Vec3D(1, 1, 1), new Vec3D(1, 0, 1), new Vec2D(0,1), new Vec2D(1,0), new Vec2D(1,1)),
+
+                new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(1, 1, 1), new Vec3D(0, 1, 1), new Vec2D(0,1), new Vec2D(0,0), new Vec2D(1,0)),
+                new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 1, 1), new Vec3D(0, 0, 1), new Vec2D(0,1), new Vec2D(1,0), new Vec2D(1,1)),
+
+                new Triangle3D(new Vec3D(0, 0, 1), new Vec3D(0, 1, 1), new Vec3D(0, 1, 0), new Vec2D(0,1), new Vec2D(0,0), new Vec2D(1,0)),
+                new Triangle3D(new Vec3D(0, 0, 1), new Vec3D(0, 1, 0), new Vec3D(0, 0, 0), new Vec2D(0,1), new Vec2D(1,0), new Vec2D(1,1)),
+
+                new Triangle3D(new Vec3D(0, 1, 0), new Vec3D(0, 1, 1), new Vec3D(1, 1, 1), new Vec2D(0,1), new Vec2D(0,0), new Vec2D(1,0)),
+                new Triangle3D(new Vec3D(0, 1, 0), new Vec3D(1, 1, 1), new Vec3D(1, 1, 0), new Vec2D(0,1), new Vec2D(1,0), new Vec2D(1,1)),
+
+                new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 0, 1), new Vec3D(0, 0, 0), new Vec2D(0,1), new Vec2D(0,0), new Vec2D(1,0)),
+                new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 0, 0), new Vec3D(1, 0, 0), new Vec2D(0,1), new Vec2D(1,0), new Vec2D(1,1))))
+    );
+
     public Controller3D(Panel panel) {
         this.panel = panel;
         initObjects(panel.getRaster());
