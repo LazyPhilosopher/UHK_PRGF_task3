@@ -26,7 +26,7 @@ public class Controller3D implements Controller {
     private float elapsed_time = 0;
     private boolean in_progress = false;
 
-    private Vec3D camera_position_vector = new Vec3D( 7.5, 1.3,19.5);
+    private Vec3D camera_position_vector = new Vec3D( 4.3,-1.2,11.1);
     private Vec3D look_direction = new Vec3D(0,0,1);
     private Vec3D light_direction = new Vec3D(1,1,0);
     private Vec3D scene_up_vector = new Vec3D(0,1,0);
@@ -58,7 +58,8 @@ public class Controller3D implements Controller {
                 new Triangle3D(new Vec3D(0, 1, 0), new Vec3D(1, 1, 1), new Vec3D(1, 1, 0), new Vec2D(0,1), new Vec2D(1,0), new Vec2D(1,1)),
 
                 new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 0, 1), new Vec3D(0, 0, 0), new Vec2D(0,1), new Vec2D(0,0), new Vec2D(1,0)),
-                new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 0, 0), new Vec3D(1, 0, 0), new Vec2D(0,1), new Vec2D(1,0), new Vec2D(1,1))))
+                new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 0, 0), new Vec3D(1, 0, 0), new Vec2D(0,1), new Vec2D(1,0), new Vec2D(1,1))
+                ))
     );
 
     public Controller3D(Panel panel) {
@@ -306,15 +307,15 @@ public class Controller3D implements Controller {
                         (int)(rasterized_triangle.color.getBlue()*light_amount));
 
                 Polygon2D polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
-                        new Point((int)triangle_2D_projected.a_x, (int)triangle_2D_projected.a_y),
-                        new Point((int)triangle_2D_projected.b_x, (int)triangle_2D_projected.b_y),
-                        new Point((int)triangle_2D_projected.c_x, (int)triangle_2D_projected.c_y)
+                        new Vec2D((int)triangle_2D_projected.a_x, (int)triangle_2D_projected.a_y),
+                        new Vec2D((int)triangle_2D_projected.b_x, (int)triangle_2D_projected.b_y),
+                        new Vec2D((int)triangle_2D_projected.c_x, (int)triangle_2D_projected.c_y)
                 )),
                         color);
                 Polygon2D texture_polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
-                        new Point((int)triangle.t1.getX(), (int)triangle.t1.getY()),
-                        new Point((int)triangle.t2.getX(), (int)triangle.t2.getY()),
-                        new Point((int)triangle.t3.getX(), (int)triangle.t3.getY())
+                        new Vec2D(triangle.t1.getX(), triangle.t1.getY()),
+                        new Vec2D(triangle.t2.getX(), triangle.t2.getY()),
+                        new Vec2D(triangle.t3.getX(), triangle.t3.getY())
                 )),
                         new Color(0x0000FF));
                 PNGSprite sprite = new PNGSprite("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\creeper.png");

@@ -3,6 +3,7 @@ package rasterize;
 import control.PNGSprite;
 import model.Point;
 import model.Polygon2D;
+import transforms.Vec2D;
 
 import java.awt.*;
 import java.util.*;
@@ -17,16 +18,16 @@ public class PolygonRasterizer extends LineRasterizer {
     }
 
     public void drawFilledPolygon(Polygon2D polygon, int int_color) {
-        List<Point> polygon_vertices = new ArrayList<>(polygon.getVertices());
+        List<Vec2D> polygon_vertices = new ArrayList<>(polygon.getVertices());
         polygon_vertices.add(polygon_vertices.get(0));
 
         // getting polygon Y-axis oriented border pixels
         // no stacked pixels on Y axis
         List<Point> border_pixels = new ArrayList<>();
         for (int i = 0; i < polygon_vertices.size()-1; i++){
-            Point a = polygon_vertices.get(i);
-            Point b = polygon_vertices.get(i+1);
-            border_pixels.addAll(getYOrientedLinePoints(a.X(), a.Y(), b.X(), b.Y()));
+            Vec2D a = polygon_vertices.get(i);
+            Vec2D b = polygon_vertices.get(i+1);
+            border_pixels.addAll(getYOrientedLinePoints(a.getX(), a.getY(), b.getX(), b.getY()));
             border_pixels.remove(b);
         }
         Map<Integer, List<Integer>> pixels_on_y_axis = new HashMap<>();
@@ -46,9 +47,9 @@ public class PolygonRasterizer extends LineRasterizer {
         // no stacked pixels on X axis
         border_pixels = new ArrayList<>();
         for (int i = 0; i < polygon_vertices.size()-1; i++){
-            Point a = polygon_vertices.get(i);
-            Point b = polygon_vertices.get(i+1);
-            border_pixels.addAll(getXOrientedLinePoints(a.X(), a.Y(), b.X(), b.Y()));
+            Vec2D a = polygon_vertices.get(i);
+            Vec2D b = polygon_vertices.get(i+1);
+            border_pixels.addAll(getXOrientedLinePoints(a.getX(), a.getY(), b.getX(), b.getY()));
         }
         Map<Integer, List<Integer>> pixels_on_x_axis = new HashMap<>();
         for (Point pixel : border_pixels){
@@ -107,16 +108,16 @@ public class PolygonRasterizer extends LineRasterizer {
     }
 
     public void drawFilledTriangle(Polygon2D polygon, Color color){
-        List<Point> polygon_vertices = new ArrayList<>(polygon.getVertices());
+        List<Vec2D> polygon_vertices = new ArrayList<>(polygon.getVertices());
         polygon_vertices.add(polygon_vertices.get(0));
 
         // getting polygon Y-axis oriented border pixels
         // no stacked pixels on Y axis
         List<Point> border_pixels = new ArrayList<>();
         for (int i = 0; i < polygon_vertices.size()-1; i++){
-            Point a = polygon_vertices.get(i);
-            Point b = polygon_vertices.get(i+1);
-            border_pixels.addAll(getYOrientedLinePoints(a.X(), a.Y(), b.X(), b.Y()));
+            Vec2D a = polygon_vertices.get(i);
+            Vec2D b = polygon_vertices.get(i+1);
+            border_pixels.addAll(getYOrientedLinePoints(a.getX(), a.getY(), b.getX(), b.getY()));
             border_pixels.remove(b);
         }
         Map<Integer, List<Integer>> pixels_on_y_axis = new HashMap<>();
@@ -148,13 +149,13 @@ public class PolygonRasterizer extends LineRasterizer {
     }
 
     public void drawTexturedTriangle(Polygon2D screen_polygon, Polygon2D texture_polygon, PNGSprite sprite){
-        List<Point> screen = screen_polygon.getVertices();
-        List<Point> texture = texture_polygon.getVertices();
+        List<Vec2D> screen = screen_polygon.getVertices();
+        List<Vec2D> texture = texture_polygon.getVertices();
 
-        List<List<Integer>> coordinates = new ArrayList<>();
-        coordinates.add(List.of(screen.get(0).X(), screen.get(0).Y(), texture.get(0).X(), texture.get(0).Y()));
-        coordinates.add(List.of(screen.get(1).X(), screen.get(1).Y(), texture.get(1).X(), texture.get(1).Y()));
-        coordinates.add(List.of(screen.get(2).X(), screen.get(2).Y(), texture.get(2).X(), texture.get(2).Y()));
+        List<List<Double>> coordinates = new ArrayList<>();
+        coordinates.add(List.of(screen.get(0).getX(), screen.get(0).getY(), texture.get(0).getX(), texture.get(0).getY()));
+        coordinates.add(List.of(screen.get(1).getX(), screen.get(1).getY(), texture.get(1).getX(), texture.get(1).getY()));
+        coordinates.add(List.of(screen.get(2).getX(), screen.get(2).getY(), texture.get(2).getX(), texture.get(2).getY()));
         // Sort the list by y coordinate in ascending order
         coordinates.sort(Comparator.comparingDouble(list -> list.get(1)));
 
@@ -181,46 +182,34 @@ public class PolygonRasterizer extends LineRasterizer {
         if(screen_dy2 != 0){texture_dy2_step = texture_dy2 / screen_dy2; } else {texture_dy2_step = 0;}
 
 
-        for (double i = screen_y1; i < screen_y2; i++){
+        for (double y = screen_y1; y <= screen_y2; y++){
             // int ax = x1 + (float)(i - y1) * dax_step;
             // int bx = x1 + (float)(i - y1) * dbx_step;
-            double ax = screen_x1 + (i-screen_y1) * dax_step;
-            double bx = screen_x1 + (i-screen_y1) * dbx_step;
+            double ax = screen_x1 + (y-screen_y1) * dax_step;
+            double bx = screen_x1 + (y-screen_y1) * dbx_step;
 
-            double tex_sx = texture_x1 + (i-screen_y1) * texture_dx1_step;
-            double tex_ex = texture_x1 + (i-screen_y1) * texture_dx2_step;
+            double tex_sx = texture_x1 + (y-screen_y1) * texture_dx1_step;
+            double tex_sy = texture_y1 + (y-screen_y1) * texture_dy1_step;
+            double tex_ex = texture_x1 + (y-screen_y1) * texture_dx2_step;
+            double tex_ey = texture_y1 + (y-screen_y1) * texture_dy2_step;
 
-            double tex_sy = texture_y1 + (i-screen_y1) * texture_dy1_step;
-            double tex_ey = texture_y1 + (i-screen_y1) * texture_dy2_step;
-
-//            if(ax > bx){
-//                double temp;
-//                temp = ax; ax = bx; bx = temp;
-//                temp = tex_sx; tex_sx = tex_ex; tex_ex = temp;
-//                temp = tex_sy; tex_sy = tex_ey; tex_ey = temp;
-//            }
-
-            texture_x = tex_sx;
-            texture_y = tex_sy;
+            // drawing on X-coordinate only from smaller to bigger
+            if(ax > bx){
+                double temp;
+                temp = ax; ax = bx; bx = temp;
+                temp = tex_sx; tex_sx = tex_ex; tex_ex = temp;
+                temp = tex_sy; tex_sy = tex_ey; tex_ey = temp;
+            }
 
             double tstep = 1 / (bx - ax);
             double t = 0;
-
-            for (double j = ax; j < bx; j++){
+            for (double x = ax; x < bx; x++){
                 texture_x = (1-t) * tex_sx + t * tex_ex;
                 texture_y = (1-t) * tex_sy + t * tex_ey;
-
-//                double test_y = tex_sy + ((ax-j)/bx) * (tex_sy - tex_ex);
-//                double test_x = tex_sx + ((j-ax)/bx) * (tex_sx - tex_ey);
-                double test_x = tex_sx + ((ax-j)/bx) * (tex_ex - tex_sx);
-                double test_y = tex_sy + ((i-screen_y1)/screen_y2) * (tex_ey - tex_sy);
-//                System.out.printf("%f %f%n", texture_x, texture_y);
-                raster.setPixel((int)j, (int)i, sprite.getColour(texture_x, texture_y));
+                raster.setPixel((int)x, (int)y, sprite.getColour(texture_x, texture_y));
                 t += tstep;
             }
         }
-        Polygon2D polygon = new Polygon2D(Arrays.asList(new Point(screen_x1, screen_y1), new Point(screen_x2, screen_y1), new Point(screen_x2, screen_y2)), new Color(0xFF0000));
-//        drawShallowPolygon(polygon, 0xFF0000);
 
         screen_dy1 = screen_y3 - screen_y2;
         screen_dx1 = screen_x3 - screen_x2;
@@ -230,9 +219,8 @@ public class PolygonRasterizer extends LineRasterizer {
         if(screen_dy1 != 0){ dax_step = screen_dx1 / screen_dy1; }
         if(screen_dy2 != 0){ dbx_step = screen_dx2 / screen_dy2; }
 
-        texture_dx1_step = 0; texture_dy1_step = 0;
-        if(screen_dx1 != 0){ texture_dx1_step = texture_dx1 / screen_dy1; }
-        if(screen_dy1 != 0){ texture_dy1_step = texture_dy1 / screen_dy1; }
+        if(screen_dx1 != 0){ texture_dx1_step = texture_dx1 / screen_dy1; } else {texture_dx1_step = 0;}
+        if(screen_dy1 != 0){ texture_dy1_step = texture_dy1 / screen_dy1; } else {texture_dy1_step = 0;}
 
         for (double i = screen_y2; i < screen_y3; i++){
             double ax = screen_x2 + (i-screen_y2) * dax_step;
@@ -266,22 +254,19 @@ public class PolygonRasterizer extends LineRasterizer {
                 t += tstep;
             }
         }
-        polygon = new Polygon2D(Arrays.asList(new Point(screen_x3, screen_y3), new Point(screen_x2, screen_y3), new Point(screen_x2, screen_y2)), new Color(0xFF0000));
-        drawShallowPolygon(polygon, 0x00FF00);
-
     }
 
 
     public List<Point> get_polygon_pixels(Polygon2D polygon){
         List<Point> out = new ArrayList<>();
 
-        List<Point> polygon_vertices = new ArrayList<>(polygon.getVertices());
+        List<Vec2D> polygon_vertices = new ArrayList<>(polygon.getVertices());
         polygon_vertices.add(polygon_vertices.get(0));
 
         for (int i = 0; i < polygon_vertices.size()-1; i++){
-            Point a = polygon_vertices.get(i);
-            Point b = polygon_vertices.get(i+1);
-            List<Point> edge_points = getLinePoints(a, b);
+            Vec2D a = polygon_vertices.get(i);
+            Vec2D b = polygon_vertices.get(i+1);
+            List<Point> edge_points = getLinePoints(new Point(a.getX(), a.getY()), new Point(b.getX(), b.getY()));
             for(Point point : edge_points){
                // point.addRelatedStruct(a);
 //                point.addRelatedStruct(b);
