@@ -81,7 +81,7 @@ public class Controller3D implements Controller {
         matrices_dict.put("x", 1);
         matrices_dict.put("y", 1);
         matrices_dict.put("z", 1);
-        matrices_dict.put("t", new Vec3D(-2,2,45));
+        matrices_dict.put("t", new Vec3D(-2,2,50));
         this.mesh_list.put(cube, matrices_dict);
 
         matrices_dict = new LinkedHashMap<>();
