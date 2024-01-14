@@ -37,11 +37,11 @@ public class Controller3D implements Controller {
 //    private final List<Mesh> mesh_list = new ArrayList<>();
     Map<Mesh, Map<String, Object>> mesh_list = new LinkedHashMap<>();
 
-    //    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\VideoShip.obj");
-    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\teapot.obj");
+    Mesh starfighter = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\VideoShip.obj");
+    Mesh teapot = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\teapot.obj");
 //    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\axis.obj");
 //    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\tie_fighter.obj");
-//    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\mountains.obj");
+//    Mesh mountains = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\mountains.obj");
 //    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\mountains.obj");
 
     Mesh cube = new Mesh(new ArrayList<>(Arrays.asList(
@@ -75,12 +75,19 @@ public class Controller3D implements Controller {
         matrices_dict.put("z", 1);
         matrices_dict.put("y", 1);
         matrices_dict.put("t", new Vec3D(0,0,50));
-        this.mesh_list.put(tie, matrices_dict);
+        this.mesh_list.put(teapot, matrices_dict);
+
+        matrices_dict = new LinkedHashMap<>();
+        matrices_dict.put("x", 1);
+        matrices_dict.put("y", 1);
+        matrices_dict.put("z", 1);
+        matrices_dict.put("t", new Vec3D(-2,2,25));
+        this.mesh_list.put(cube, matrices_dict);
 
         matrices_dict = new LinkedHashMap<>();
         matrices_dict.put("y", 1);
-        matrices_dict.put("t", new Vec3D(-2,2,25));
-        this.mesh_list.put(cube, matrices_dict);
+        matrices_dict.put("t", new Vec3D(-10,0,75));
+        this.mesh_list.put(starfighter, matrices_dict);
 
         update();
         setLoop();
@@ -342,7 +349,7 @@ public class Controller3D implements Controller {
                         color);
 
                 if(triangle.t1 == null || triangle.t2 == null || triangle.t3 == null ){
-                    renderer.polygonRasterizer.drawFilledPolygon(polygon, color.getRGB());
+                    renderer.polygonRasterizer.drawFilledTriangle(polygon, color);
                 } else {
                     Polygon2D texture_polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
                             new Vec2D(triangle.t1.getX(), triangle.t1.getY()),
