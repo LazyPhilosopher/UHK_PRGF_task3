@@ -28,12 +28,12 @@ public class Controller3D implements Controller {
     private float elapsed_time = 0;
     private boolean in_progress = false;
 
-    private Vec3D camera_position_vector = new Vec3D( 0,0,0);
+    private Vec3D camera_position_vector = new Vec3D(-2.5, 0.0,77.5);
     private Vec3D look_direction = new Vec3D(0,0,1);
     private Vec3D light_direction = new Vec3D(1,1,0);
     private Vec3D scene_up_vector = new Vec3D(0,1,0);
 
-    private float azimuth = (float) 0;
+    private float azimuth = (float) -3.15;
     private Mat4 proj;
 
     Map<Mesh, Map<String, Object>> mesh_list = new LinkedHashMap<>();
@@ -81,12 +81,12 @@ public class Controller3D implements Controller {
         matrices_dict.put("x", 1);
         matrices_dict.put("y", 1);
         matrices_dict.put("z", 1);
-        matrices_dict.put("t", new Vec3D(-2,2,25));
+        matrices_dict.put("t", new Vec3D(-2,2,45));
         this.mesh_list.put(cube, matrices_dict);
 
         matrices_dict = new LinkedHashMap<>();
         matrices_dict.put("y", 1);
-        matrices_dict.put("t", new Vec3D(-10,0,75));
+        matrices_dict.put("t", new Vec3D(-5,5,0));
         this.mesh_list.put(starfighter, matrices_dict);
 
         update();
@@ -216,11 +216,13 @@ public class Controller3D implements Controller {
         Mat4PointAt camera_matrix = new Mat4PointAt(camera_position_vector, camera_look_direction_vector, scene_up_vector);
         Mat4 view_matrix = camera_matrix.Mat4QuickInverse();
 
+        List<Triangle3D> triangles = new ArrayList<>();
         for (Map.Entry<Mesh, Map<String, Object>> entry : this.mesh_list.entrySet()){
             Mesh mesh = entry.getKey();
             Map<String, Object> matrices_dict = entry.getValue();
-            rasterizeMesh(mesh, matrices_dict, view_matrix, elapsed_time);
+            triangles.addAll(getRasterizedtrianglesFromMesh(mesh, matrices_dict, view_matrix, elapsed_time));
         }
+        rasterizeTriangles(triangles);
 
 //        look_direction = new Mat4RotY(azimuth).Multiply3DVector(new Vec3D(0,0,1));
 //        look_direction.normSelf();
@@ -252,7 +254,7 @@ public class Controller3D implements Controller {
         in_progress = false;
     }
 
-    public void rasterizeMesh(Mesh mesh, Map<String, Object> matrices_dict, Mat4 view_matrix, float time){
+    public List<Triangle3D> getRasterizedtrianglesFromMesh(Mesh mesh, Map<String, Object> matrices_dict, Mat4 view_matrix, float time){
 
         Mat4Proj proj_matrix = new Mat4Proj();
         Mat4 shift_matrix = new Mat4Identity();
@@ -320,25 +322,22 @@ public class Controller3D implements Controller {
             }
 
         }
-        // Sort the list based on the Z attribute
-        polygons.sort((tri1, tri2) -> Double.compare(tri2.a.getZ() + tri2.b.getZ() + tri2.c.getZ(), tri1.a.getZ() + tri1.b.getZ() + tri1.c.getZ()));
 
+        List<Triangle3D> output = new ArrayList<>();
         // clip polygons by four field-of-view planes
-        for(Triangle3D rasterized_triangle : polygons){
+        for(Triangle3D rasterized_triangle : polygons) {
             List<Triangle3D> clipped = new ArrayList<>();
-            List<Triangle3D> listTriangles = new ArrayList<>();
+            List<Triangle3D> clipped_triangles = new ArrayList<>();
 
             // Add initial triangle
-            listTriangles.add(rasterized_triangle);
+            clipped_triangles.add(rasterized_triangle);
             int nNewTriangles = 1;
 
-            for (int p = 0; p < 4; p++)
-            {
-                while (nNewTriangles > 0)
-                {
+            for (int p = 0; p < 4; p++) {
+                while (nNewTriangles > 0) {
                     // Take triangle from front of queue
-                    Triangle3D test = listTriangles.get(0);
-                    listTriangles.remove(0);
+                    Triangle3D test = clipped_triangles.get(0);
+                    clipped_triangles.remove(0);
                     nNewTriangles--;
 
                     switch (p) {
@@ -350,45 +349,57 @@ public class Controller3D implements Controller {
                     // Clipping may yield a variable number of triangles, so
                     // add these new ones to the back of the queue for subsequent
                     // clipping against next planes
-                    listTriangles.addAll(clipped);
+                    clipped_triangles.addAll(clipped);
                 }
-                nNewTriangles = listTriangles.size();
+                nNewTriangles = clipped_triangles.size();
             }
 
-            // draw clipped triangles
-            for (Triangle3D triangle : listTriangles)
-            {
-                Triangle2D triangle_2D_projected = new Triangle2D(triangle);
-                triangle_2D_projected.shift_XY(1.0, 1.0);
-                triangle_2D_projected.mul_XY(0.5 * panel.getHeight(), 0.5 * panel.getWidth());
-
-                light_direction.normSelf();
-                double light_amount = (light_direction.dotProduct(rasterized_triangle.norm)/2.0001+0.5);
-                Color color = new Color((int)(rasterized_triangle.color.getRed()*light_amount),
-                        (int)(rasterized_triangle.color.getGreen()*light_amount),
-                        (int)(rasterized_triangle.color.getBlue()*light_amount));
-
-                Polygon2D polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
-                        new Vec2D((int)triangle_2D_projected.a_x, (int)triangle_2D_projected.a_y),
-                        new Vec2D((int)triangle_2D_projected.b_x, (int)triangle_2D_projected.b_y),
-                        new Vec2D((int)triangle_2D_projected.c_x, (int)triangle_2D_projected.c_y)
-                )),
-                        color);
-
-                if(triangle.t1 == null || triangle.t2 == null || triangle.t3 == null ){
-                    renderer.polygonRasterizer.drawFilledTriangle(polygon, color);
-                } else {
-                    Polygon2D texture_polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
-                            new Vec2D(triangle.t1.getX(), triangle.t1.getY()),
-                            new Vec2D(triangle.t2.getX(), triangle.t2.getY()),
-                            new Vec2D(triangle.t3.getX(), triangle.t3.getY()))),
-                            new Color(0x0000FF));
-//                    PNGSprite sprite = new PNGSprite("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\creeper.png");
-                    renderer.polygonRasterizer.drawTexturedTriangle(polygon, texture_polygon, mesh.sprite, light_amount);
+            for (Triangle3D tri : clipped_triangles) {
+                tri.setNorm(rasterized_triangle.norm);
+                if (mesh.sprite != null) {
+                    tri.set_sprite(mesh.sprite);
                 }
+            }
+            output.addAll(clipped_triangles);
+        }
+        return output;
+    }
+
+    public void rasterizeTriangles(List<Triangle3D> triangles){
+        // Sort the list based on the Z attribute
+        triangles.sort((tri1, tri2) -> Double.compare(tri2.a.getZ() + tri2.b.getZ() + tri2.c.getZ(), tri1.a.getZ() + tri1.b.getZ() + tri1.c.getZ()));
+
+        for (Triangle3D triangle : triangles)
+        {
+            Triangle2D triangle_2D_projected = new Triangle2D(triangle);
+            triangle_2D_projected.shift_XY(1.0, 1.0);
+            triangle_2D_projected.mul_XY(0.5 * panel.getHeight(), 0.5 * panel.getWidth());
+
+            light_direction.normSelf();
+            double light_amount = (light_direction.dotProduct(triangle.norm)/2.0001+0.5);
+            Color color = new Color((int)(triangle.color.getRed()*light_amount),
+                    (int)(triangle.color.getGreen()*light_amount),
+                    (int)(triangle.color.getBlue()*light_amount));
+
+            Polygon2D polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
+                    new Vec2D((int)triangle_2D_projected.a_x, (int)triangle_2D_projected.a_y),
+                    new Vec2D((int)triangle_2D_projected.b_x, (int)triangle_2D_projected.b_y),
+                    new Vec2D((int)triangle_2D_projected.c_x, (int)triangle_2D_projected.c_y)
+            )),
+                    color);
+
+            if(triangle.t1 == null || triangle.t2 == null || triangle.t3 == null ){
+                renderer.polygonRasterizer.drawFilledTriangle(polygon, color);
+            } else {
+                Polygon2D texture_polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
+                        new Vec2D(triangle.t1.getX(), triangle.t1.getY()),
+                        new Vec2D(triangle.t2.getX(), triangle.t2.getY()),
+                        new Vec2D(triangle.t3.getX(), triangle.t3.getY()))),
+                        new Color(0x0000FF));
+//                    PNGSprite sprite = new PNGSprite("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\creeper.png");
+                renderer.polygonRasterizer.drawTexturedTriangle(polygon, texture_polygon, triangle.sprite, light_amount);
             }
         }
-
     }
 
     HashMap<String, Object> vectorIntersectPlane(Vec3D plane_point, Vec3D plane_normal, Vec3D line_start, Vec3D line_end){

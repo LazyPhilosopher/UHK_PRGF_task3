@@ -1,5 +1,6 @@
 package model;
 
+import control.PNGSprite;
 import transforms.Vec2D;
 import transforms.Vec3D;
 
@@ -9,6 +10,7 @@ public class Triangle3D {
     public Vec3D a, b, c, norm;
     public  Color color;
     public Vec2D t1, t2, t3;
+    public PNGSprite sprite;
 
     public Triangle3D(){
         this.a = new Vec3D(0,0,0);
@@ -80,5 +82,9 @@ public class Triangle3D {
 
     public boolean is_textured(){
         return (!(this.t1 == null) || !(this.t2 == null) || !(this.t3 == null));
+    }
+
+    public void set_sprite(PNGSprite sprite){
+        this.sprite = sprite;
     }
 }
