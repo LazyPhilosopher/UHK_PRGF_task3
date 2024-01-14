@@ -34,7 +34,6 @@ public class Controller3D implements Controller {
     private float azimuth = (float) 0;
     private Mat4 proj;
 
-//    private final List<Mesh> mesh_list = new ArrayList<>();
     Map<Mesh, Map<String, Object>> mesh_list = new LinkedHashMap<>();
 
     Mesh starfighter = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\VideoShip.obj");
@@ -221,6 +220,33 @@ public class Controller3D implements Controller {
             Map<String, Object> matrices_dict = entry.getValue();
             rasterizeMesh(mesh, matrices_dict, view_matrix, elapsed_time);
         }
+
+//        look_direction = new Mat4RotY(azimuth).Multiply3DVector(new Vec3D(0,0,1));
+//        look_direction.normSelf();
+//
+//        camera_look_direction_vector = camera_position_vector.add(look_direction);
+//        camera_matrix = new Mat4PointAt(camera_position_vector, camera_look_direction_vector, scene_up_vector);
+//        view_matrix = camera_matrix.Mat4QuickInverse();
+//
+//        Mat4Proj proj_matrix = new Mat4Proj();
+//        Vec2D start_point = new Vec2D(20, panel.getHeight()-20);
+//        Vec3D x_line = new Vec3D(1,0,0);
+//        Vec3D y_line = new Vec3D(0,0.1,0);
+//        Vec3D z_line = new Vec3D(0,0,1);
+//        x_line = view_matrix.MultiplyVector(x_line);
+//        x_line = proj_matrix.MultiplyVector(x_line);
+//        y_line = view_matrix.MultiplyVector(y_line);
+//        y_line = proj_matrix.MultiplyVector(y_line);
+//        z_line = view_matrix.MultiplyVector(z_line);
+//        z_line = proj_matrix.MultiplyVector(z_line);
+//
+////        line_rasterizer.drawLine(start_point.getX(),start_point.getY(), start_point.getX() + x_line.getX(), start_point.getY() + x_line.getY(), new Color(0xff0000));
+//        line_rasterizer.drawLine(start_point.getX(),start_point.getY(),
+//                (start_point.getX() - y_line.getX()*panel.getWidth()),
+//                (start_point.getY() - y_line.getY()*panel.getHeight()),
+//                new Color(0x00ff00));
+////        line_rasterizer.drawLine(start_point.getX(),start_point.getY(), start_point.getX() + z_line.getX(), start_point.getY() + z_line.getY(), new Color(0x0000ff));
+
         panel.repaint();
         in_progress = false;
     }

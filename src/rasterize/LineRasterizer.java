@@ -48,7 +48,13 @@ public class LineRasterizer {
 
     public void drawLine(int x1, int y1, int x2, int y2, Color color) {
         for (Point point : getLinePoints(x1, y1, x2, y2)) {
-            this.raster.setPixel((int) point.X(), (int) point.Y(), color.getRGB());
+            this.raster.setPixel(point.X(), point.Y(), color.getRGB());
+        }
+    }
+
+    public void drawLine(double x1, double y1, double x2, double y2, Color color) {
+        for (Point point : getLinePoints(x1, y1, x2, y2)) {
+            this.raster.setPixel(point.X(), point.Y(), color.getRGB());
         }
     }
 
