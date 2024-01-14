@@ -26,19 +26,22 @@ public class Controller3D implements Controller {
     private float elapsed_time = 0;
     private boolean in_progress = false;
 
-    private Vec3D camera_position_vector = new Vec3D( 4.3,-1.2,11.1);
+    private Vec3D camera_position_vector = new Vec3D( 0,0,0);
     private Vec3D look_direction = new Vec3D(0,0,1);
     private Vec3D light_direction = new Vec3D(1,1,0);
     private Vec3D scene_up_vector = new Vec3D(0,1,0);
 
-    private float azimuth = (float) -3.5;
+    private float azimuth = (float) 0;
     private Mat4 proj;
 
+//    private final List<Mesh> mesh_list = new ArrayList<>();
+    Map<Mesh, Map<String, Object>> mesh_list = new LinkedHashMap<>();
+
     //    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\VideoShip.obj");
-//    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\teapot.obj");
+    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\teapot.obj");
 //    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\axis.obj");
 //    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\tie_fighter.obj");
-    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\mountains.obj");
+//    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\mountains.obj");
 //    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\mountains.obj");
 
     Mesh cube = new Mesh(new ArrayList<>(Arrays.asList(
@@ -59,13 +62,25 @@ public class Controller3D implements Controller {
 
                 new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 0, 1), new Vec3D(0, 0, 0), new Vec2D(0,1), new Vec2D(0,0), new Vec2D(1,0)),
                 new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 0, 0), new Vec3D(1, 0, 0), new Vec2D(0,1), new Vec2D(1,0), new Vec2D(1,1))
-                ))
+                )),
+            new PNGSprite("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\creeper.png")
     );
 
     public Controller3D(Panel panel) {
         this.panel = panel;
         initObjects(panel.getRaster());
         initListeners(panel);
+
+        Map<String, Object> matrices_dict = new LinkedHashMap<>();
+        matrices_dict.put("z", 1);
+        matrices_dict.put("y", 1);
+        matrices_dict.put("t", new Vec3D(0,0,50));
+        this.mesh_list.put(tie, matrices_dict);
+
+        matrices_dict = new LinkedHashMap<>();
+        matrices_dict.put("y", 1);
+        matrices_dict.put("t", new Vec3D(-2,2,25));
+        this.mesh_list.put(cube, matrices_dict);
 
         update();
         setLoop();
@@ -75,15 +90,6 @@ public class Controller3D implements Controller {
         line_rasterizer = new LineRasterizerGraphics(raster);
         polygon_rasterizer = new PolygonRasterizer(raster);
         renderer = new WiredRenderer(line_rasterizer, polygon_rasterizer);
-
-//        camera = new Camera(
-//          new Vec3D(0, -1, 0.3),
-//          Math.toRadians(90),
-//          Math.toRadians(-15),
-//          1,
-//          true
-//        );
-
         proj = new Mat4PerspRH(
                 Math.PI / 4,
                 raster.getHeight() / (double)raster.getWidth(),
@@ -199,28 +205,50 @@ public class Controller3D implements Controller {
         look_direction = new Mat4RotY(azimuth).Multiply3DVector(new Vec3D(0,0,1));
         look_direction.normSelf();
 
-
         Vec3D camera_look_direction_vector = camera_position_vector.add(look_direction);
         Mat4PointAt camera_matrix = new Mat4PointAt(camera_position_vector, camera_look_direction_vector, scene_up_vector);
         Mat4 view_matrix = camera_matrix.Mat4QuickInverse();
 
+        for (Map.Entry<Mesh, Map<String, Object>> entry : this.mesh_list.entrySet()){
+            Mesh mesh = entry.getKey();
+            Map<String, Object> matrices_dict = entry.getValue();
+            rasterizeMesh(mesh, matrices_dict, view_matrix, elapsed_time);
+        }
+        panel.repaint();
+        in_progress = false;
+    }
+
+    public void rasterizeMesh(Mesh mesh, Map<String, Object> matrices_dict, Mat4 view_matrix, float time){
+
         Mat4Proj proj_matrix = new Mat4Proj();
-
         Mat4 shift_matrix = new Mat4Identity();
-        shift_matrix = shift_matrix.mul(new Mat4RotX(Math.PI));
-        shift_matrix = shift_matrix.mul(new Mat4RotY(Math.PI-elapsed_time));
-        shift_matrix = shift_matrix.mul(new Mat4RotZ(elapsed_time));
-        shift_matrix = shift_matrix.mul(new Mat4Transl(new Vec3D(0,0,0)));
 
+        for (Map.Entry<String, Object> entry : matrices_dict.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            switch (key){
+                case "x":
+                    shift_matrix = shift_matrix.mul(new Mat4RotX((int)value * time));
+                    break;
+                case "y":
+                    shift_matrix = shift_matrix.mul(new Mat4RotY((int)value * time));
+                    break;
+                case "z":
+                    shift_matrix = shift_matrix.mul(new Mat4RotZ( (int)value * time));
+                    break;
+                case "t":
+                    shift_matrix = shift_matrix.mul(new Mat4Transl((Vec3D) value));
+                    break;
+            }
+        }
 
         ArrayList<Triangle3D> polygons = new ArrayList<>();
-        for (Triangle3D tri : cube.polygons){
+        for (Triangle3D tri : mesh.polygons){
 
             // translate and rotate origin triangle
             Triangle3D shifted_triangle = shift_matrix.Multiply3DTriangle(tri);
             shifted_triangle.t1 = tri.t1; shifted_triangle.t2 = tri.t2; shifted_triangle.t3 = tri.t3;
             Vec3D norm = shifted_triangle.calculateNorm();
-//            norm.normSelf();
 
             Vec3D sight_vector = new Vec3D();
             sight_vector.setX(shifted_triangle.a.getX() - camera_position_vector.getX());
@@ -312,21 +340,21 @@ public class Controller3D implements Controller {
                         new Vec2D((int)triangle_2D_projected.c_x, (int)triangle_2D_projected.c_y)
                 )),
                         color);
-                Polygon2D texture_polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
-                        new Vec2D(triangle.t1.getX(), triangle.t1.getY()),
-                        new Vec2D(triangle.t2.getX(), triangle.t2.getY()),
-                        new Vec2D(triangle.t3.getX(), triangle.t3.getY())
-                )),
-                        new Color(0x0000FF));
-                PNGSprite sprite = new PNGSprite("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\creeper.png");
-                renderer.polygonRasterizer.drawTexturedTriangle(polygon, texture_polygon, sprite, light_amount);
+
+                if(triangle.t1 == null || triangle.t2 == null || triangle.t3 == null ){
+                    renderer.polygonRasterizer.drawFilledPolygon(polygon, color.getRGB());
+                } else {
+                    Polygon2D texture_polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
+                            new Vec2D(triangle.t1.getX(), triangle.t1.getY()),
+                            new Vec2D(triangle.t2.getX(), triangle.t2.getY()),
+                            new Vec2D(triangle.t3.getX(), triangle.t3.getY()))),
+                            new Color(0x0000FF));
+//                    PNGSprite sprite = new PNGSprite("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\creeper.png");
+                    renderer.polygonRasterizer.drawTexturedTriangle(polygon, texture_polygon, mesh.sprite, light_amount);
+                }
             }
         }
 
-        panel.repaint();
-
-
-        in_progress = false;
     }
 
     HashMap<String, Object> vectorIntersectPlane(Vec3D plane_point, Vec3D plane_normal, Vec3D line_start, Vec3D line_end){
@@ -383,28 +411,28 @@ public class Controller3D implements Controller {
         }
         else if(inside_points.size() == 1 && outside_points.size() == 2){
             Triangle3D out1 = new Triangle3D();
-//            out1.color = new Color(0x0000FF);
             out1.color = input_triangle.color;
-
             out1.a = inside_points.get(0);
-            out1.t1 = inside_textures.get(0);
 
             double t, new_texture_x, new_texture_y;
-
             HashMap<String, Object> out1_b_clipped = vectorIntersectPlane(plane_point, plane_normal, out1.a, outside_points.get(0));
             out1.b = (Vec3D) out1_b_clipped.get("vector");
-            t = (double) out1_b_clipped.get("t");
-            new_texture_x = t*(outside_textures.get(0).getX() - inside_textures.get(0).getX()) + inside_textures.get(0).getX();
-            new_texture_y = t*(outside_textures.get(0).getY() - inside_textures.get(0).getY()) + inside_textures.get(0).getY();
-            out1.t2 = new Vec2D(new_texture_x, new_texture_y);
+            if (input_triangle.is_textured()) {
+                out1.t1 = inside_textures.get(0);
+                t = (double) out1_b_clipped.get("t");
+                new_texture_x = t * (outside_textures.get(0).getX() - inside_textures.get(0).getX()) + inside_textures.get(0).getX();
+                new_texture_y = t * (outside_textures.get(0).getY() - inside_textures.get(0).getY()) + inside_textures.get(0).getY();
+                out1.t2 = new Vec2D(new_texture_x, new_texture_y);
+            }
 
             HashMap<String, Object> out1_c_clipped = vectorIntersectPlane(plane_point, plane_normal, out1.a, outside_points.get(1));
             out1.c = (Vec3D) out1_c_clipped.get("vector");
-            t = (double) out1_c_clipped.get("t");
-            new_texture_x = t*(outside_textures.get(1).getX() - inside_textures.get(0).getX()) + inside_textures.get(0).getX();
-            new_texture_y = t*(outside_textures.get(1).getY() - inside_textures.get(0).getY()) + inside_textures.get(0).getY();
-            out1.t3 = new Vec2D(new_texture_x, new_texture_y);
-
+            if (input_triangle.is_textured()) {
+                t = (double) out1_c_clipped.get("t");
+                new_texture_x = t * (outside_textures.get(1).getX() - inside_textures.get(0).getX()) + inside_textures.get(0).getX();
+                new_texture_y = t * (outside_textures.get(1).getY() - inside_textures.get(0).getY()) + inside_textures.get(0).getY();
+                out1.t3 = new Vec2D(new_texture_x, new_texture_y);
+            }
             output.add(out1);
         }
         else if(inside_points.size() == 2 && outside_points.size() == 1){
@@ -412,34 +440,34 @@ public class Controller3D implements Controller {
             Triangle3D out2 = new Triangle3D();
             out1.color = input_triangle.color;
             out2.color = input_triangle.color;
-//            out1.color = new Color(0xFF0000);
-//            out2.color = new Color(0x00FF00);
 
             out1.a = inside_points.get(0);
             out1.b = inside_points.get(1);
-            out1.t1 = inside_textures.get(0);
-            out1.t2 = inside_textures.get(1);
 
             double t, new_texture_x, new_texture_y;
-
             HashMap<String, Object> out2_c_clipped = vectorIntersectPlane(plane_point, plane_normal, out1.a, outside_points.get(0));
             out1.c = (Vec3D) out2_c_clipped.get("vector");
-            t = (double) out2_c_clipped.get("t");
-            new_texture_x = t*(outside_textures.get(0).getX() - inside_textures.get(0).getX()) + inside_textures.get(0).getX();
-            new_texture_y = t*(outside_textures.get(0).getY() - inside_textures.get(0).getY()) + inside_textures.get(0).getY();
-            out1.t3 = new Vec2D(new_texture_x, new_texture_y);
+            if (input_triangle.is_textured()) {
+                out1.t1 = inside_textures.get(0);
+                out1.t2 = inside_textures.get(1);
+                t = (double) out2_c_clipped.get("t");
+                new_texture_x = t * (outside_textures.get(0).getX() - inside_textures.get(0).getX()) + inside_textures.get(0).getX();
+                new_texture_y = t * (outside_textures.get(0).getY() - inside_textures.get(0).getY()) + inside_textures.get(0).getY();
+                out1.t3 = new Vec2D(new_texture_x, new_texture_y);
+            }
 
             out2.a = inside_points.get(1);
-            out2.t1 = inside_textures.get(1);
             out2.b = out1.c;
-            out2.t2 = out1.t3;
-
             HashMap<String, Object> out1_c_clipped = vectorIntersectPlane(plane_point, plane_normal, out1.b, outside_points.get(0));
             out2.c = (Vec3D) out1_c_clipped.get("vector");
-            t = (double) out1_c_clipped.get("t");
-            new_texture_x = t*(outside_textures.get(0).getX() - inside_textures.get(1).getX()) + inside_textures.get(1).getX();
-            new_texture_y = t*(outside_textures.get(0).getY() - inside_textures.get(1).getY()) + inside_textures.get(1).getY();
-            out2.t3 = new Vec2D(new_texture_x, new_texture_y);
+            if (input_triangle.is_textured()) {
+                out2.t1 = out1.t2;
+                out2.t2 = out1.t3;
+                t = (double) out1_c_clipped.get("t");
+                new_texture_x = t * (outside_textures.get(0).getX() - inside_textures.get(1).getX()) + inside_textures.get(1).getX();
+                new_texture_y = t * (outside_textures.get(0).getY() - inside_textures.get(1).getY()) + inside_textures.get(1).getY();
+                out2.t3 = new Vec2D(new_texture_x, new_texture_y);
+            }
 
             output.add(out1);
             output.add(out2);

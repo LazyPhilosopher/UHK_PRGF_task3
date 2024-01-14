@@ -1,5 +1,6 @@
 package model;
 
+import control.PNGSprite;
 import transforms.Point3D;
 import transforms.Vec3D;
 
@@ -12,12 +13,18 @@ import java.io.IOException;
 import java.util.List;
 
 public class Mesh {
+    public PNGSprite sprite;
     public ArrayList<Triangle3D> polygons;
     public ArrayList<Triangle2D> texture_polygons;
 
 
     public Mesh(ArrayList<Triangle3D> _polygons){
         this.polygons = _polygons;
+    }
+
+    public Mesh(ArrayList<Triangle3D> _polygons, PNGSprite sprite){
+        this.polygons = _polygons;
+        this.sprite =  sprite;
     }
 
 //    // textured mesh

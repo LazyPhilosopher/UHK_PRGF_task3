@@ -77,4 +77,8 @@ public class Triangle3D {
 
         return norm;
     }
+
+    public boolean is_textured(){
+        return (!(this.t1 == null) || !(this.t2 == null) || !(this.t3 == null));
+    }
 }

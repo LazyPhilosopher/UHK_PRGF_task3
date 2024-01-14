@@ -104,7 +104,7 @@ public class PolygonRasterizer extends LineRasterizer {
                 }
             }
         }
-        drawShallowPolygon(polygon, 0xFFFFFF);
+//        drawShallowPolygon(polygon, int_color);
     }
 
     public void drawFilledTriangle(Polygon2D polygon, Color color){
