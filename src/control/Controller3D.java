@@ -13,6 +13,8 @@ import view.Panel;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 import java.util.Timer;
@@ -36,12 +38,11 @@ public class Controller3D implements Controller {
 
     Map<Mesh, Map<String, Object>> mesh_list = new LinkedHashMap<>();
 
-    Mesh starfighter = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\VideoShip.obj");
-    Mesh teapot = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\teapot.obj");
-//    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\axis.obj");
-//    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\tie_fighter.obj");
-//    Mesh mountains = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\mountains.obj");
-//    Mesh tie = new Mesh("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\mountains.obj");
+    Mesh starfighter = new Mesh(String.valueOf(Paths.get("src\\blender\\VideoShip.obj").toAbsolutePath()));
+    Mesh teapot = new Mesh(String.valueOf(Paths.get("src\\blender\\teapot.obj").toAbsolutePath()));
+//    Mesh axis = new Mesh(String.valueOf(Paths.get("src\\blender\\axis.obj").toAbsolutePath()));
+//    Mesh tie = new Mesh("String.valueOf(Paths.get("src\\blender\\tie_fighter.obj").toAbsolutePath()));
+//    Mesh mountains = new Mesh(String.valueOf(Paths.get("src\\blender\\mountains.obj").toAbsolutePath()));
 
     Mesh cube = new Mesh(new ArrayList<>(Arrays.asList(
                 new Triangle3D(new Vec3D(0, 0, 0), new Vec3D(0, 1, 0), new Vec3D(1, 1, 0), new Vec2D(0,1), new Vec2D(0,0), new Vec2D(1,0)),
@@ -62,7 +63,7 @@ public class Controller3D implements Controller {
                 new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 0, 1), new Vec3D(0, 0, 0), new Vec2D(0,1), new Vec2D(0,0), new Vec2D(1,0)),
                 new Triangle3D(new Vec3D(1, 0, 1), new Vec3D(0, 0, 0), new Vec3D(1, 0, 0), new Vec2D(0,1), new Vec2D(1,0), new Vec2D(1,1))
                 )),
-            new PNGSprite("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\creeper.png")
+            new PNGSprite(String.valueOf(Paths.get("src\\blender\\sprites\\creeper.png").toAbsolutePath()))
     );
 
     public Controller3D(Panel panel) {
