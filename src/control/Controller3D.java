@@ -78,9 +78,9 @@ public class Controller3D implements Controller {
         this.mesh_list.put(teapot, matrices_dict);
 
         matrices_dict = new LinkedHashMap<>();
-        matrices_dict.put("x", 1);
-        matrices_dict.put("y", 1);
-        matrices_dict.put("z", 1);
+        matrices_dict.put("x", 5);
+        matrices_dict.put("y", 5);
+        matrices_dict.put("z", 5);
         matrices_dict.put("t", new Vec3D(-2,2,50));
         this.mesh_list.put(cube, matrices_dict);
 

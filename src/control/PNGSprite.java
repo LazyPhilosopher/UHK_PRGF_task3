@@ -24,7 +24,7 @@ public class PNGSprite {
 
             for (int x = 0; x < nWidth; x++) {
                 for (int y = 0; y < nHeight; y++) {
-                    this.pixelData[x][y] = image.getRGB(x, y);
+                    this.pixelData[x][y] = image.getRGB(nWidth-x-1, y);
                 }
             }
 
