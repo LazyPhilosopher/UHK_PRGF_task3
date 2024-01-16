@@ -28,14 +28,14 @@ public class Controller3D implements Controller {
     private float elapsed_time = 0;
     private boolean in_progress = false;
 
-    private Vec3D camera_position_vector = new Vec3D(-2.5, 0.0,77.5);
+    private Vec3D camera_position_vector = new Vec3D( 0.0, 0.6,64.1);
     private Vec3D look_direction = new Vec3D(0,0,1);
     private Vec3D light_direction = new Vec3D(1,1,0);
     private Vec3D scene_up_vector = new Vec3D(0,1,0);
 
-    private float azimuth = (float) -3.15;
+    private float azimuth = (float) -3.46;
     private Mat4 proj;
-    private double deg_field_of_view = 100;
+    private double deg_field_of_view = 170;
 
     Map<Mesh, Map<String, Object>> mesh_list = new LinkedHashMap<>();
 
@@ -43,7 +43,7 @@ public class Controller3D implements Controller {
     Mesh teapot = new Mesh(String.valueOf(Paths.get("src\\blender\\teapot.obj").toAbsolutePath()));
 //    Mesh axis = new Mesh(String.valueOf(Paths.get("src\\blender\\axis.obj").toAbsolutePath()));
 //    Mesh tie = new Mesh("String.valueOf(Paths.get("src\\blender\\tie_fighter.obj").toAbsolutePath()));
-//    Mesh mountains = new Mesh(String.valueOf(Paths.get("src\\blender\\mountains.obj").toAbsolutePath()));
+    Mesh mountains = new Mesh(String.valueOf(Paths.get("src\\blender\\mountains.obj").toAbsolutePath()));
 
     Mesh cube = new Mesh(new ArrayList<>(Arrays.asList(
                 new Triangle3D(new Vec3D(0, 0, 0), new Vec3D(0, 1, 0), new Vec3D(1, 1, 0), new Vec2D(0,1), new Vec2D(0,0), new Vec2D(1,0)),
@@ -89,6 +89,10 @@ public class Controller3D implements Controller {
         matrices_dict.put("y", 1);
         matrices_dict.put("t", new Vec3D(-5,5,0));
         this.mesh_list.put(starfighter, matrices_dict);
+
+        matrices_dict = new LinkedHashMap<>();
+        matrices_dict.put("t", new Vec3D(-5,-10,0));
+        this.mesh_list.put(mountains, matrices_dict);
 
         update();
         setLoop();
@@ -172,32 +176,42 @@ public class Controller3D implements Controller {
         panel.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                // na klávesu C vymazat plátno
-                if (e.getKeyCode() == KeyEvent.VK_C) {
-                    //TODO
-                }else if (e.getKeyCode() == KeyEvent.VK_UP) {
+                if (e.getKeyCode() == KeyEvent.VK_UP) {
                     camera_position_vector = camera_position_vector.add(look_direction.mul(1));
                 }else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
                     camera_position_vector = camera_position_vector.sub(look_direction.mul(1));
                 }else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-                    azimuth -= 0.01;
+                    azimuth -= 0.1;
                 }else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-                    azimuth += 0.01;
+                    azimuth += 0.1;
                 }
                 if (e.getKeyCode() == KeyEvent.VK_W) {
-                    camera_position_vector.addY(.1);
+                    Vec3D camera_look_direction_vector = camera_position_vector.add(look_direction);
+                    Mat4PointAt camera_matrix = new Mat4PointAt(camera_position_vector, camera_look_direction_vector, scene_up_vector);
+                    camera_position_vector = camera_position_vector.add(camera_matrix.getDownVector());
                 }
                 if (e.getKeyCode() == KeyEvent.VK_S) {
-                    camera_position_vector.addY(-.1);
+                    Vec3D camera_look_direction_vector = camera_position_vector.add(look_direction);
+                    Mat4PointAt camera_matrix = new Mat4PointAt(camera_position_vector, camera_look_direction_vector, scene_up_vector);
+                    camera_position_vector = camera_position_vector.add(camera_matrix.getUpVector());
+                }
+                if (e.getKeyCode() == KeyEvent.VK_A) {
+                    Vec3D camera_look_direction_vector = camera_position_vector.add(look_direction);
+                    Mat4PointAt camera_matrix = new Mat4PointAt(camera_position_vector, camera_look_direction_vector, scene_up_vector);
+                    camera_position_vector = camera_position_vector.add(camera_matrix.getLeftVector());
+                }
+                if (e.getKeyCode() == KeyEvent.VK_D) {
+                    Vec3D camera_look_direction_vector = camera_position_vector.add(look_direction);
+                    Mat4PointAt camera_matrix = new Mat4PointAt(camera_position_vector, camera_look_direction_vector, scene_up_vector);
+                    camera_position_vector = camera_position_vector.add(camera_matrix.getRightVector());
                 }
                 if (e.getKeyCode() == KeyEvent.VK_ADD){
                     deg_field_of_view+=10;
-                    if(deg_field_of_view > 179){deg_field_of_view=179;}
+                    if(deg_field_of_view >= 180){deg_field_of_view=175;}
                 }
-
                 if (e.getKeyCode() == KeyEvent.VK_SUBTRACT){
                     deg_field_of_view-=10;
-                    if(deg_field_of_view < 0){deg_field_of_view=0;}
+                    if(deg_field_of_view < 0){deg_field_of_view=0.1;}
                 }
                 System.out.printf("Field of View: %f%n", deg_field_of_view);
                 System.out.printf("Azimuth: %f%n", azimuth);
@@ -234,32 +248,6 @@ public class Controller3D implements Controller {
             triangles.addAll(getRasterizedtrianglesFromMesh(mesh, matrices_dict, view_matrix, elapsed_time));
         }
         rasterizeTriangles(triangles);
-
-//        look_direction = new Mat4RotY(azimuth).Multiply3DVector(new Vec3D(0,0,1));
-//        look_direction.normSelf();
-//
-//        camera_look_direction_vector = camera_position_vector.add(look_direction);
-//        camera_matrix = new Mat4PointAt(camera_position_vector, camera_look_direction_vector, scene_up_vector);
-//        view_matrix = camera_matrix.Mat4QuickInverse();
-//
-//        Mat4Proj proj_matrix = new Mat4Proj();
-//        Vec2D start_point = new Vec2D(20, panel.getHeight()-20);
-//        Vec3D x_line = new Vec3D(1,0,0);
-//        Vec3D y_line = new Vec3D(0,0.1,0);
-//        Vec3D z_line = new Vec3D(0,0,1);
-//        x_line = view_matrix.MultiplyVector(x_line);
-//        x_line = proj_matrix.MultiplyVector(x_line);
-//        y_line = view_matrix.MultiplyVector(y_line);
-//        y_line = proj_matrix.MultiplyVector(y_line);
-//        z_line = view_matrix.MultiplyVector(z_line);
-//        z_line = proj_matrix.MultiplyVector(z_line);
-//
-////        line_rasterizer.drawLine(start_point.getX(),start_point.getY(), start_point.getX() + x_line.getX(), start_point.getY() + x_line.getY(), new Color(0xff0000));
-//        line_rasterizer.drawLine(start_point.getX(),start_point.getY(),
-//                (start_point.getX() - y_line.getX()*panel.getWidth()),
-//                (start_point.getY() - y_line.getY()*panel.getHeight()),
-//                new Color(0x00ff00));
-////        line_rasterizer.drawLine(start_point.getX(),start_point.getY(), start_point.getX() + z_line.getX(), start_point.getY() + z_line.getY(), new Color(0x0000ff));
 
         panel.repaint();
         in_progress = false;
@@ -313,7 +301,7 @@ public class Controller3D implements Controller {
             // clip polygons too far in front of camera
             List<Triangle3D> clipped_triangles = new ArrayList<>();
             for(Triangle3D triangle : far_enough_clipped_triangles){
-                clipped_triangles.addAll(triangleClipAgainstPlane(new Vec3D(0,0,500), new Vec3D(0,0,-1), triangle));
+                clipped_triangles.addAll(triangleClipAgainstPlane(new Vec3D(0,0,100), new Vec3D(0,0,-1), triangle));
             }
 
             for(Triangle3D clipped_triangle : clipped_triangles){
