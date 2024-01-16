@@ -35,6 +35,7 @@ public class Controller3D implements Controller {
 
     private float azimuth = (float) -3.15;
     private Mat4 proj;
+    private double deg_field_of_view = 100;
 
     Map<Mesh, Map<String, Object>> mesh_list = new LinkedHashMap<>();
 
@@ -189,8 +190,18 @@ public class Controller3D implements Controller {
                 if (e.getKeyCode() == KeyEvent.VK_S) {
                     camera_position_vector.addY(-.1);
                 }
-                System.out.println(azimuth);
-                System.out.println(camera_position_vector);
+                if (e.getKeyCode() == KeyEvent.VK_ADD){
+                    deg_field_of_view+=10;
+                    if(deg_field_of_view > 179){deg_field_of_view=179;}
+                }
+
+                if (e.getKeyCode() == KeyEvent.VK_SUBTRACT){
+                    deg_field_of_view-=10;
+                    if(deg_field_of_view < 0){deg_field_of_view=0;}
+                }
+                System.out.printf("Field of View: %f%n", deg_field_of_view);
+                System.out.printf("Azimuth: %f%n", azimuth);
+                System.out.printf("Camera position: "+ camera_position_vector + "%n");
 
             }
         });
@@ -256,7 +267,7 @@ public class Controller3D implements Controller {
 
     public List<Triangle3D> getRasterizedtrianglesFromMesh(Mesh mesh, Map<String, Object> matrices_dict, Mat4 view_matrix, float time){
 
-        Mat4Proj proj_matrix = new Mat4Proj();
+        Mat4Proj proj_matrix = new Mat4Proj(this.deg_field_of_view);
         Mat4 shift_matrix = new Mat4Identity();
 
         for (Map.Entry<String, Object> entry : matrices_dict.entrySet()) {
