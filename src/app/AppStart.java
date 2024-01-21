@@ -1,6 +1,5 @@
 package app;
 
-import control.Controller2D;
 import control.Controller3D;
 import view.Window;
 
@@ -14,8 +13,6 @@ public class AppStart {
             new Controller3D(window.getPanel());
             window.setVisible(true);
         });
-        // https://www.google.com/search?q=SwingUtilities.invokeLater
-        // https://www.javamex.com/tutorials/threads/invokelater.shtml
     }
 
 }
