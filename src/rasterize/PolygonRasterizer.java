@@ -6,9 +6,8 @@ import model.Polygon2D;
 import transforms.Vec2D;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class PolygonRasterizer extends LineRasterizer {
     LineRasterizerTrivial line_rasterizer;
@@ -54,8 +53,8 @@ public class PolygonRasterizer extends LineRasterizer {
 //        drawShallowPolygon(polygon, 0x0000FF);
     }
 
-    public void drawShallowPolygon(Polygon2D polygon, int int_color){
-        for (Point pixel : get_polygon_pixels(polygon)){raster.setPixel(pixel.X(), pixel.Y(), int_color);}
+    public void drawShallowPolygon(Polygon2D polygon, Color color){
+        for (Point pixel : get_polygon_pixels(polygon)){raster.setPixel(pixel.X(), pixel.Y(), color.getRGB());}
     }
 
     public void drawTexturedTriangle(Polygon2D screen_polygon, Polygon2D texture_polygon, PNGSprite sprite, double light_amount){
@@ -151,9 +150,6 @@ public class PolygonRasterizer extends LineRasterizer {
                 temp = tex_sy; tex_sy = tex_ey; tex_ey = temp;
             }
 
-            texture_x = tex_sx;
-            texture_y = tex_sy;
-
             double tstep = 1 / (bx - ax);
             double t = 0;
 
@@ -179,11 +175,6 @@ public class PolygonRasterizer extends LineRasterizer {
             Vec2D a = polygon_vertices.get(i);
             Vec2D b = polygon_vertices.get(i+1);
             List<Point> edge_points = getLinePoints(new Point(a.getX(), a.getY()), new Point(b.getX(), b.getY()));
-            for(Point point : edge_points){
-               // point.addRelatedStruct(a);
-//                point.addRelatedStruct(b);
-//                point.addRelatedStruct(polygon);
-            }
             out.addAll(edge_points);
         }
         return out;

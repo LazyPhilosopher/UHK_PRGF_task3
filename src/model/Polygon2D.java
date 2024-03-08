@@ -3,7 +3,6 @@ package model;
 import transforms.Vec2D;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Polygon2D {
@@ -19,12 +18,16 @@ public class Polygon2D {
         this._color = color;
     }
 
+    public void setColor(Color color){
+        this._color = color;
+    }
+
+    public Color getColor(){
+        return this._color;
+    }
+
     // Polygon vertices getter method.
     public List<Vec2D>getVertices(){
         return _vertices;
-    }
-
-    public void removePoint(Point point){
-        this._vertices.remove(point);
     }
 }

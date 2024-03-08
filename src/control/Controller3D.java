@@ -1,7 +1,9 @@
 package control;
 
-import model.*;
-import model.Point;
+import model.Mesh;
+import model.Polygon2D;
+import model.Triangle2D;
+import model.Triangle3D;
 import rasterize.LineRasterizer;
 import rasterize.LineRasterizerGraphics;
 import rasterize.PolygonRasterizer;
@@ -10,14 +12,14 @@ import renderer.WiredRenderer;
 import transforms.*;
 import view.Panel;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.nio.file.Path;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.nio.file.Paths;
-import java.util.*;
 import java.util.List;
-import java.util.Timer;
+import java.util.*;
 
 public class Controller3D implements Controller {
     private final Panel panel;
@@ -36,6 +38,7 @@ public class Controller3D implements Controller {
     private float azimuth = (float) -3.46;
     private Mat4 proj;
     private double deg_field_of_view = 170;
+    private boolean wireframe_mode = false;
 
     Map<Mesh, Map<String, Object>> mesh_list = new LinkedHashMap<>();
 
@@ -113,67 +116,6 @@ public class Controller3D implements Controller {
 
     @Override
     public void initListeners(Panel panel) {
-        panel.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (e.isControlDown()) return;
-
-                if (e.isShiftDown()) {
-                    //TODO
-                } else if (SwingUtilities.isLeftMouseButton(e)) {
-                    // rasterizer.rasterize(x, y, e.getX(),e.getY(), Color.RED);
-                } else if (SwingUtilities.isMiddleMouseButton(e)) {
-                    //TODO
-                } else if (SwingUtilities.isRightMouseButton(e)) {
-                    //TODO
-                }
-
-                update();
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.isControlDown()) {
-                    if (SwingUtilities.isLeftMouseButton(e)) {
-                        //TODO
-                    } else if (SwingUtilities.isRightMouseButton(e)) {
-                        //TODO
-                    }
-                }
-            }
-        });
-
-        panel.addMouseMotionListener(new MouseAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                panel.clear();
-
-                line_rasterizer.rasterize(
-                        panel.getRaster().getWidth() / 2,
-                        panel.getRaster().getHeight() / 2,
-                        e.getX(),
-                        e.getY(),
-                        Color.YELLOW
-                );
-
-                panel.repaint();
-
-                if (e.isControlDown()) return;
-
-                if (e.isShiftDown()) {
-                    //TODO
-                } else if (SwingUtilities.isLeftMouseButton(e)) {
-                    //TODO
-                } else if (SwingUtilities.isRightMouseButton(e)) {
-                    //TODO
-                } else if (SwingUtilities.isMiddleMouseButton(e)) {
-                    //TODO
-                }
-                update();
-            }
-        });
-
         panel.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -214,6 +156,9 @@ public class Controller3D implements Controller {
                     deg_field_of_view-=10;
                     if(deg_field_of_view < 0){deg_field_of_view=0.1;}
                 }
+                if (e.getKeyCode() == KeyEvent.VK_T){
+                    wireframe_mode = !wireframe_mode;
+                }
                 System.out.printf("Field of View: %f%n", deg_field_of_view);
                 System.out.printf("Azimuth: %f%n", azimuth);
                 System.out.printf("Camera position: "+ camera_position_vector + "%n");
@@ -243,9 +188,11 @@ public class Controller3D implements Controller {
         Mat4 view_matrix = camera_matrix.Mat4QuickInverse();
 
         List<Triangle3D> triangles = new ArrayList<>();
+        // get each mesh and its transformation matrices
         for (Map.Entry<Mesh, Map<String, Object>> entry : this.mesh_list.entrySet()){
             Mesh mesh = entry.getKey();
             Map<String, Object> matrices_dict = entry.getValue();
+            // adjust transformations to elapsed_time and apply to each polygon
             triangles.addAll(getRasterizedtrianglesFromMesh(mesh, matrices_dict, view_matrix, elapsed_time));
         }
         rasterizeTriangles(triangles);
@@ -375,28 +322,35 @@ public class Controller3D implements Controller {
             triangle_2D_projected.shift_XY(1.0, 1.0);
             triangle_2D_projected.mul_XY(0.5 * panel.getHeight(), 0.5 * panel.getWidth());
 
-            light_direction.normSelf();
-            double light_amount = (light_direction.dotProduct(triangle.norm)/2.0001+0.5);
-            Color color = new Color((int)(triangle.color.getRed()*light_amount),
-                    (int)(triangle.color.getGreen()*light_amount),
-                    (int)(triangle.color.getBlue()*light_amount));
-
             Polygon2D polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
                     new Vec2D((int)triangle_2D_projected.a_x, (int)triangle_2D_projected.a_y),
                     new Vec2D((int)triangle_2D_projected.b_x, (int)triangle_2D_projected.b_y),
                     new Vec2D((int)triangle_2D_projected.c_x, (int)triangle_2D_projected.c_y)
             )),
-                    color);
+                    new Color(0x00FFFF));
 
+            if (wireframe_mode){
+                renderer.polygonRasterizer.drawShallowPolygon(polygon, new Color(0x00FFFF));
+                continue;
+            }
+
+            light_direction.normSelf();
+            double light_amount = (light_direction.dotProduct(triangle.norm)/2.0001+0.5);
+            Color color = new Color((int)(triangle.color.getRed()*light_amount),
+                    (int)(triangle.color.getGreen()*light_amount),
+                    (int)(triangle.color.getBlue()*light_amount));
+            polygon.setColor(color);
+
+            // if no texture provided
             if(triangle.t1 == null || triangle.t2 == null || triangle.t3 == null ){
                 renderer.polygonRasterizer.drawFilledTriangle(polygon, color);
             } else {
+                // textured polygon
                 Polygon2D texture_polygon = new Polygon2D(new ArrayList<>(Arrays.asList(
                         new Vec2D(triangle.t1.getX(), triangle.t1.getY()),
                         new Vec2D(triangle.t2.getX(), triangle.t2.getY()),
                         new Vec2D(triangle.t3.getX(), triangle.t3.getY()))),
-                        new Color(0x0000FF));
-//                    PNGSprite sprite = new PNGSprite("C:\\Users\\Call_me_Utka\\Desktop\\PGRF-1\\UHK_PRGF_task3\\src\\blender\\creeper.png");
+                        color);
                 renderer.polygonRasterizer.drawTexturedTriangle(polygon, texture_polygon, triangle.sprite, light_amount);
             }
         }
